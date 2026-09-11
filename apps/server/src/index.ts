@@ -7,13 +7,26 @@ import { getObjectIdFromcxPan, PhotoSign } from './functions/photo';
 import { QRCodeSign } from './functions/qrcode';
 import { getAccountInfo, getCourses, getLocalUsers, userLogin } from './functions/user';
 import { getJsonObject, storeUser } from './utils/file';
+import { restoreTerminal } from './utils/terminal';
+
+restoreTerminal();
 
 const PromptsOptions = {
   onCancel: () => {
     console.log(red('✖') + ' 操作取消');
+    restoreTerminal();
     process.exit(0);
   },
 };
+
+const shutdown = () => {
+  restoreTerminal();
+  setTimeout(() => process.exit(0), 50).unref();
+};
+
+process.once('SIGINT', shutdown);
+process.once('SIGTERM', shutdown);
+process.once('exit', restoreTerminal);
 
 (async function () {
   let params: UserCookieType & { phone?: string; };

@@ -15,12 +15,28 @@ import { getIMParams, getLocalUsers, userLogin } from './functions/user';
 import { getJsonObject, getStoredUser, storeUser } from './utils/file';
 import { delay } from './utils/helper';
 import { sendEmail } from './utils/mailer';
+import { writeMonitorLog } from './utils/monitorLogger';
+import { restoreTerminal } from './utils/terminal';
 import { PromptsOptions, addressPrompts, monitorPromptsQuestions } from './configs/prompts';
+// pnpm/turbo 退出异常后可能遗留控制台 raw mode，监听子进程启动时主动复位。
+restoreTerminal();
 const JSDOM = new jsdom.JSDOM('', { url: 'https://im.chaoxing.com/webim/me' });
-(globalThis.window as any) = JSDOM.window;
-(globalThis.WebSocket as any) = WebSocket;
-globalThis.navigator = JSDOM.window.navigator;
-globalThis.location = JSDOM.window.location;
+const setGlobalValue = (name: string, value: any) => {
+  try {
+    Object.defineProperty(globalThis, name, {
+      configurable: true,
+      enumerable: true,
+      writable: true,
+      value,
+    });
+  } catch {
+    (globalThis as any)[name] = value;
+  }
+};
+setGlobalValue('window', JSDOM.window);
+setGlobalValue('WebSocket', WebSocket);
+setGlobalValue('navigator', JSDOM.window.navigator);
+setGlobalValue('location', JSDOM.window.location);
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const webIM = require('./utils/websdk3.1.4.js').default;
@@ -117,7 +133,13 @@ async function configure(phone: string) {
   return JSON.parse(JSON.stringify({ mailing: config!.mailing, monitor: config!.monitor, cqserver: config!.cqserver }));
 }
 
-async function Sign(realname: string, params: UserCookieType & { tuid: string; }, config: any, activity: Activity) {
+type DetectedActivity = Omit<Activity, 'courseId' | 'classId' | 'otherId'> & {
+  courseId?: string;
+  classId?: string;
+  otherId?: number;
+};
+
+async function Sign(realname: string, params: UserCookieType & { tuid: string; }, config: any, activity: DetectedActivity) {
   let result = null;
   // 群聊签到，无课程
   if (!activity.courseId) {
@@ -153,7 +175,7 @@ async function Sign(realname: string, params: UserCookieType & { tuid: string; }
   }
 
   // 课程签到
-  await preSign({ ...activity, ...params });
+  await preSign({ ...activity, courseId: activity.courseId!, classId: activity.classId!, ...params });
   switch (activity.otherId) {
     case 2: {
       // 二维码签到
@@ -196,6 +218,65 @@ async function Sign(realname: string, params: UserCookieType & { tuid: string; }
   return result;
 }
 
+/**
+ * 从超星 IM 消息中提取签到活动。
+ *
+ * 课程签到通常位于 att_chat_course，群聊签到可能没有 courseInfo，
+ * 也可能使用带有 sign/active 标记的其他附件结构。这里只负责发现活动，
+ * 具体签到仍统一交给 Sign() 处理。
+ */
+function getSignActivity(message: any): DetectedActivity | null {
+  const attachment = message?.ext?.attachment;
+
+  const visited = new Set<any>();
+  let activity: DetectedActivity | null = null;
+
+  const visit = (value: any, fieldName = '') => {
+    if (activity || value === null || typeof value !== 'object' || visited.has(value)) return;
+    visited.add(value);
+
+    const activeId = value.aid ?? value.activeId ?? value.activeid ?? value.activityId;
+    const url = [value.url, value.signUrl, value.activeUrl]
+      .find((item) => typeof item === 'string' && item.length > 0);
+    const courseInfo = value.courseInfo;
+    const hasCourse = !!(courseInfo?.courseid || courseInfo?.courseId);
+    const signMarked = (typeof url === 'string' && /sign|签到/i.test(url))
+      || /sign|签到|active/i.test(fieldName);
+    // 无课程群聊活动常见为 att_chat_course，但没有 courseInfo。
+    // 普通签到卡片也可能没有 sign URL；att_chat_course + aid 本身就是活动消息。
+    const isChatActivity = fieldName === 'att_chat_course' && activeId;
+
+    if (activeId && (signMarked || isChatActivity)) {
+      activity = {
+        activeId: String(activeId),
+        courseId: courseInfo?.courseid ?? courseInfo?.courseId,
+        classId: courseInfo?.classid ?? courseInfo?.classId,
+        chatId: message?.to,
+      };
+      return;
+    }
+
+    for (const [key, child] of Object.entries(value)) visit(child, key);
+  };
+
+  if (attachment && typeof attachment === 'object') visit(attachment);
+  else if (typeof attachment === 'string') {
+    try { visit(JSON.parse(attachment)); } catch { /* 非 JSON 附件 */ }
+  }
+  // 某些版本把附件序列化成 JSON 字符串，补充解析消息正文中的 JSON。
+  if (!activity) {
+    const candidates = [message?.data, message?.body, message?.msg, message?.content];
+    for (const candidate of candidates) {
+      if (typeof candidate !== 'string') continue;
+      try {
+        visit(JSON.parse(candidate));
+      } catch { /* 普通文本不是活动载荷 */ }
+      if (activity) break;
+    }
+  }
+  return activity;
+}
+
 async function handleMsg(this: CQ, data: string) {
   // 处理图片，是否二维码，发送一些其他反馈
   if (CQ.hasImage(data) && this.getCache('params') !== undefined) {
@@ -215,8 +296,27 @@ async function handleMsg(this: CQ, data: string) {
   }
 }
 
-process.on('SIGINT', () => {
-  process.exit(0);
+let shuttingDown = false;
+let reconnectTimer: NodeJS.Timeout | undefined;
+
+const shutdown = () => {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  if (reconnectTimer) clearTimeout(reconnectTimer);
+  restoreTerminal();
+  writeMonitorLog(process.argv[2] === '--auth' ? process.argv[3] : 'cli', 'shutdown', { reason: 'SIGINT' });
+  setTimeout(() => process.exit(0), 50).unref();
+};
+
+process.once('SIGINT', shutdown);
+process.once('SIGTERM', shutdown);
+process.once('exit', restoreTerminal);
+process.on('uncaughtException', (error) => {
+  writeMonitorLog(process.argv[2] === '--auth' ? process.argv[3] : 'cli', 'uncaughtException', { message: error.message, stack: error.stack });
+  console.error('[监听异常]', error);
+});
+process.on('unhandledRejection', (reason) => {
+  writeMonitorLog(process.argv[2] === '--auth' ? process.argv[3] : 'cli', 'unhandledRejection', reason);
 });
 
 // 开始运行
@@ -236,6 +336,7 @@ process.on('SIGINT', () => {
     config.monitor = { ...auth_config.config.monitor };
     config.mailing = { ...auth_config.config.mailing };
     config.cqserver = { ...auth_config.config.cqserver };
+    writeMonitorLog(params.phone, 'startup', { mode: 'web', config: config.monitor });
   } else {
     // 打印本地用户列表，并返回用户数量
     const userItem = (
@@ -271,6 +372,7 @@ process.on('SIGINT', () => {
   }
   params.tuid = IM_Params.myTuid;
   params.name = IM_Params.myName;
+  writeMonitorLog(params.phone || 'cli', 'im_params_ready', { tuid: IM_Params.myTuid });
 
   let cq: CQ;
   // 建立连接，添加监听事件并绑定处理函数
@@ -280,7 +382,7 @@ process.on('SIGINT', () => {
     cq.onMessage(handleMsg);
   }
 
-  conn.open({
+  const openConnection = () => conn.open({
     apiUrl: WebIMConfig.apiURL,
     user: IM_Params.myTuid,
     accessToken: IM_Params.myToken,
@@ -289,41 +391,54 @@ process.on('SIGINT', () => {
 
   conn.listen({
     onOpened: () => {
+      writeMonitorLog(params.phone || 'cli', 'connection_opened', {});
       if (process.send) process.send('success');
     },
     onClosed: () => {
-      console.log('[监听停止]');
-      process.exit(0);
+      writeMonitorLog(params.phone || 'cli', 'connection_closed', {});
+      if (shuttingDown) return;
+      console.log('[监听连接关闭] 5 秒后自动重连');
+      reconnectTimer = setTimeout(openConnection, 5000);
     },
     onTextMessage: async (message: any) => {
-      if (message?.ext?.attachment?.att_chat_course?.url.includes('sign')) {
-        const IM_CourseInfo = {
-          aid: message.ext.attachment.att_chat_course.aid,
-          classId: message.ext.attachment.att_chat_course?.courseInfo?.classid,
-          courseId: message.ext.attachment.att_chat_course?.courseInfo?.courseid,
-        };
-        const PPTActiveInfo = await getPPTActiveInfo({ activeId: IM_CourseInfo.aid, ...(params as UserCookieType) });
+      writeMonitorLog(params.phone || 'cli', 'raw_message', message);
+      const IM_ActivityInfo = getSignActivity(message);
+      if (IM_ActivityInfo) {
+        process.send?.({
+          type: 'sign_event',
+          event: { type: 'detected', activeId: IM_ActivityInfo.activeId, time: Date.now() }
+        });
+        const PPTActiveInfo = await getPPTActiveInfo({ activeId: IM_ActivityInfo.activeId, ...(params as UserCookieType) });
 
         // 签到 & 推送消息
         // 签到检测通知推送
         if (config.cqserver?.cq_enabled) {
           cq.send(`${IM_Params.myName}，检测到${getSignType(PPTActiveInfo)}，将在${config.monitor.delay}秒后处理`, config.cqserver.target_id);
-          cq.setCache('params', { ...params, activeId: IM_CourseInfo.aid });
+          cq.setCache('params', { ...params, activeId: IM_ActivityInfo.activeId });
         }
+
+        process.send?.({
+          type: 'sign_event',
+          event: { type: 'processing', activeId: IM_ActivityInfo.activeId, signType: getSignType(PPTActiveInfo), time: Date.now() }
+        });
 
         await delay(config.monitor.delay);
         const result = await Sign(IM_Params.myName, params, config.monitor, {
-          classId: IM_CourseInfo.classId,
-          courseId: IM_CourseInfo.courseId,
-          activeId: IM_CourseInfo.aid,
+          classId: IM_ActivityInfo.classId,
+          courseId: IM_ActivityInfo.courseId,
+          activeId: IM_ActivityInfo.activeId,
           otherId: PPTActiveInfo.otherId,
           ifphoto: PPTActiveInfo.ifphoto,
-          chatId: message?.to,
+          chatId: IM_ActivityInfo.chatId,
+        });
+        process.send?.({
+          type: 'sign_event',
+          event: { type: 'result', activeId: IM_ActivityInfo.activeId, signType: getSignType(PPTActiveInfo), result: result || '未返回结果', time: Date.now() }
         });
         // 邮件推送签到结果
         if (config.mailing?.enabled) {
           sendEmail({
-            aid: IM_CourseInfo.aid,
+            aid: IM_ActivityInfo.activeId,
             uid: params._uid,
             realname: IM_Params.myName,
             status: result,
@@ -337,11 +452,29 @@ process.on('SIGINT', () => {
 
       }
     },
+    // 签到卡片在不同版本可能通过自定义/命令消息到达，先完整记录以便确认真实协议。
+    onCustomMessage: (message: any) => {
+      writeMonitorLog(params.phone || 'cli', 'raw_custom_message', message);
+    },
+    onCmdMessage: (message: any) => {
+      writeMonitorLog(params.phone || 'cli', 'raw_cmd_message', message);
+    },
+    onPresence: (message: any) => {
+      writeMonitorLog(params.phone || 'cli', 'presence_message', message);
+    },
     onError: (msg: string) => {
+      writeMonitorLog(params.phone || 'cli', 'connection_error', msg);
       console.log(red('[发生异常]'), msg);
-      process.exit(0);
     },
   });
 
   console.log(blue(`[监听中] ${config.cqserver.cq_enabled ? 'CQ服务器已连接' : ''} ${config.mailing?.enabled ? '邮件推送已开启' : ''}...`));
-})();
+})().catch((error) => {
+  const phone = process.argv[2] === '--auth' ? process.argv[3] : 'cli';
+  writeMonitorLog(phone, 'startup_error', { message: error?.message, stack: error?.stack });
+  console.error(red('[监听启动失败]'), error);
+  restoreTerminal();
+  if (process.send) process.send({ type: 'startup_error', message: error?.message || '未知错误' });
+  process.exitCode = 1;
+  setTimeout(() => process.exit(1), 50).unref();
+});

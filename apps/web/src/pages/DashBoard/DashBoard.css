@@ -114,3 +114,30 @@ h1 {
     font-size: 1.7rem;
   }
 }
+.dashboard-page {
+  width: min(900px, calc(100vw - 32px));
+  padding: 40px 0 80px;
+  color: #334155;
+}
+
+.monitor-panel {
+  padding: 28px;
+  border-radius: 24px !important;
+  background: rgba(255,255,255,.7) !important;
+  box-shadow: 12px 12px 28px #cdd1d4, -12px -12px 28px #fff !important;
+  text-align: left;
+  margin-bottom: 36px;
+}
+
+.monitor-heading, .sign-feed-heading, .sign-event { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.monitor-heading h2, .sign-feed-heading h3 { margin: 4px 0; }
+.eyebrow { margin: 0; color: #64748b; font-size: .8rem; letter-spacing: .12em; }
+.muted { color: #8290a3; font-size: .88rem; }
+.monitor-control { display: flex; align-items: center; gap: 8px; }
+.sign-feed-heading { margin-top: 30px; }
+.sign-feed { margin-top: 12px; }
+.sign-event { padding: 15px 0; border-top: 1px solid #e2e8f0; }
+.sign-event strong, .sign-event span, .sign-event small { display: block; }
+.event-right { text-align: right; color: #16a34a; }
+.event-right small { color: #94a3b8; margin-top: 4px; }
+.empty-feed { padding: 28px 0 8px; color: #94a3b8; text-align: center; }

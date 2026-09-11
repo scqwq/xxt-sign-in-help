@@ -205,9 +205,13 @@ function Start() {
   };
 
   return (
-    <div className={styles.startBox}>
-      <h1>让我们开始吧</h1>
-      <p className={styles.hint}>你可以选择或添加一个用户</p>
+      <div className={styles.startBox}>
+      <div className={styles.hero}>
+        <p className={styles.eyebrow}>CHAOXING SIGN-IN</p>
+        <h1>签到控制台</h1>
+        <p className={styles.hint}>选择一个账户进入控制台，开启检测、查看群聊签到和管理签到配置。</p>
+      </div>
+      {loaded && user.length === 0 && <p className={styles.empty}>还没有账户，点击下方卡片添加超星账户。</p>}
       {
         // 渲染所有用户卡片
         user.map((e) => {

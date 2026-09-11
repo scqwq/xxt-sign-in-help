@@ -23,3 +23,5 @@ export const monitor_status_api = baseUrl + '/monitor/status';
 export const monitor_start_api = baseUrl + '/monitor/start';
 
 export const monitor_stop_api = baseUrl + '/monitor/stop';
+
+export const monitor_events_api = baseUrl + '/monitor/events';

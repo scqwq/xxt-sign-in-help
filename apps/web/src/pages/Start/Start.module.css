@@ -11,9 +11,15 @@
 }
 
 .startBox {
-  margin-top: 5rem;
+  width: min(1060px, calc(100vw - 32px));
+  margin-top: 4rem;
   margin-bottom: 5rem;
 }
+
+.hero { max-width: 680px; margin: 0 auto 3rem; text-align: center; }
+.hero h1 { margin: .4rem 0 .8rem; color: #334155; font-size: clamp(2rem, 5vw, 3.5rem); }
+.eyebrow { margin: 0; color: #64748b; font-size: .78rem; letter-spacing: .2em; }
+.empty { color: #8290a3; margin: 2rem 0; }
 
 @media screen and (max-width: 500px) {
   .neumCard {

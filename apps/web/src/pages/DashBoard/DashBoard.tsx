@@ -5,9 +5,14 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Snackbar from '@mui/material/Snackbar';
 import { fetch as Fetch } from '../../utils/request';
 import Box from '@mui/material/Box';
+import Paper from '@mui/material/Paper';
+import Switch from '@mui/material/Switch';
+import Chip from '@mui/material/Chip';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import IconButton from '@mui/material/IconButton';
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { activity_api, login_api } from '../../config/api';
+import { activity_api, login_api, monitor_events_api, monitor_start_api, monitor_status_api, monitor_stop_api } from '../../config/api';
 import './DashBoard.css';
 import { generalSign, getuvToken, locationSign, parseEnc, photoSign, qrcodeSign, showResultWithTransition, uploadFile } from './Helper';
 
@@ -43,12 +48,53 @@ function DashBoard() {
   const [radio, setRadio] = useState(0);
   const [values, setValues] = useState<{ [index: string]: string | File; }>({});
   const [alert, setAlert] = useState<AlertInfo>({ msg: '', show: false, severity: 'info' });
+  const [monitorLoading, setMonitorLoading] = useState(false);
+  const [monitorEvents, setMonitorEvents] = useState<any[]>([]);
+  const [monitorOnline, setMonitorOnline] = useState(false);
 
   const [control, setControl] = useState({
     start: {
       show: true
     }
   });
+
+  const refreshMonitor = async () => {
+    if (!params.phone) return;
+    const [status, events] = await Promise.all([
+      Fetch(`${monitor_status_api}/${params.phone}`),
+      Fetch(`${monitor_events_api}/${params.phone}`)
+    ]);
+    setMonitorOnline(status?.code === 200);
+    setMonitorEvents(events?.events || []);
+  };
+
+  const toggleAccountMonitor = async () => {
+    if (!userParams.phone || monitorLoading) return;
+    setMonitorLoading(true);
+    try {
+      const isRunning = monitorOnline;
+      const payload = isRunning ? undefined : btoa(unescape(encodeURIComponent(JSON.stringify({
+        credentials: { phone: userParams.phone, uf: userParams.uf, _d: userParams._d, vc3: userParams.vc3,
+          uid: userParams._uid, lv: userParams.lv, fid: userParams.fid },
+        config: userParams.config
+      }))));
+      const result = await Fetch(`${isRunning ? monitor_stop_api : monitor_start_api}/${userParams.phone}`, {
+        method: 'POST', body: isRunning ? undefined : { payload }
+      });
+      if (result?.code === 200 || result?.code === 201) {
+        setMonitorOnline(result.code === 200);
+        setAlert({ msg: result.code === 200 ? '已开启签到监听' : '已停止签到监听', show: true, severity: 'success' });
+      } else {
+        setAlert({ msg: result?.msg || '监听状态更新失败', show: true, severity: 'error' });
+      }
+      await refreshMonitor();
+    } catch (error) {
+      console.error(error);
+      setAlert({ msg: '无法连接签到监听服务，请确认后端已启动', show: true, severity: 'error' });
+    } finally {
+      setMonitorLoading(false);
+    }
+  };
 
   const start = async () => {
     // eslint-disable-next-line prefer-const
@@ -221,8 +267,40 @@ function DashBoard() {
     };
   }, []);
 
+  useEffect(() => {
+    refreshMonitor();
+    const timer = window.setInterval(refreshMonitor, 5000);
+    return () => window.clearInterval(timer);
+  }, [params.phone]);
+
   return (
-    <div>
+    <div className='dashboard-page'>
+      <Paper className='monitor-panel' elevation={0}>
+        <div className='monitor-heading'>
+          <div>
+            <p className='eyebrow'>账户控制台</p>
+            <h2>{userParams.name || '账户'}的签到检测</h2>
+            <span className='muted'>课程活动与群聊普通签到都会显示在下面</span>
+          </div>
+          <div className='monitor-control'>
+            <Chip label={monitorOnline ? '检测中' : '未检测'} color={monitorOnline ? 'success' : 'default'} />
+            <Switch checked={monitorOnline} onChange={toggleAccountMonitor} disabled={monitorLoading} />
+          </div>
+        </div>
+        <div className='sign-feed-heading'>
+          <div><h3>签到显示栏</h3><span className='muted'>自动每 5 秒刷新，也可以手动刷新</span></div>
+          <IconButton aria-label='刷新签到记录' onClick={refreshMonitor}><RefreshIcon /></IconButton>
+        </div>
+        <div className='sign-feed'>
+          {monitorEvents.length === 0 && <div className='empty-feed'>暂未检测到签到活动，开启检测后请等待群聊消息到达。</div>}
+          {monitorEvents.map((event) => (
+            <div className='sign-event' key={event.id}>
+              <div><strong>{event.type === 'detected' ? '检测到签到活动' : event.type === 'processing' ? '正在处理签到' : '签到处理结果'}</strong><span className='muted'>活动 {event.activeId}</span></div>
+              <div className='event-right'><span>{event.result || event.signType || '已捕获'}</span><small>{new Date(event.time).toLocaleTimeString()}</small></div>
+            </div>
+          ))}
+        </div>
+      </Paper>
       {
         control.start.show &&
         <ButtonBase
