@@ -319,3 +319,18 @@
 {"time":"2026-09-12T06:34:31.891Z","type":"manual_sign_request","payload":{"activeId":8000175124665,"otherId":4,"courseId":"266906839","hasPhoto":false}}
 {"time":"2026-09-12T06:34:32.129Z","type":"manual_sign_result","payload":{"activeId":8000175124665,"result":"[位置]您已签到过了","success":false}}
 {"time":"2026-09-12T06:34:44.939Z","type":"poll_shutdown","payload":{"reason":"signal"}}
+{"time":"2026-09-12T07:18:08.684Z","type":"start_request","payload":{"contentType":"application/json","rawBodyType":"string","parsedBodyType":"object","bodyKeys":["payload"]}}
+{"time":"2026-09-12T07:18:08.689Z","type":"fork_prepare","payload":{"script":"D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\poll.ts","exists":true,"isTypeScript":true,"payloadLength":1448,"execPath":"D:\\moresoftware\\nodejs\\node.exe"}}
+{"time":"2026-09-12T07:18:08.739Z","type":"child_process_forked","payload":{"pid":114704}}
+{"time":"2026-09-12T07:18:10.636Z","type":"child_stderr","payload":"ϵͳ�Ҳ���ָ����·����\r\n"}
+{"time":"2026-09-12T07:18:10.643Z","type":"child_stdout","payload":"\u001b[0m\u001b[?25h\u001b[?1l\u001b[2J\u001b[H"}
+{"time":"2026-09-12T07:18:10.646Z","type":"poll_startup","payload":{"mode":"web","pollInterval":30}}
+{"time":"2026-09-12T07:18:10.945Z","type":"poll_ready","payload":{"realname":"零梁志"}}
+{"time":"2026-09-12T07:18:10.950Z","type":"child_stdout","payload":"[轮询监听中] 每 30 秒检查一次课程签到活动...\n"}
+{"time":"2026-09-12T07:18:11.606Z","type":"child_stdout","payload":"检测到活动：位置签到\n"}
+{"time":"2026-09-12T07:18:11.673Z","type":"poll_activity_detected","payload":{"activeId":8000175124665,"name":"位置签到","courseId":"266906839","courseName":"266906839","signType":"位置签到","shouldAutoSign":false}}
+{"time":"2026-09-12T07:18:11.676Z","type":"child_stdout","payload":"[检测到签到] 266906839 - 位置签到 (手动)\n"}
+{"time":"2026-09-12T07:18:43.648Z","type":"child_stdout","payload":"检测到活动：位置签到\n"}
+{"time":"2026-09-12T07:18:57.297Z","type":"manual_sign_request","payload":{"activeId":8000175124665,"otherId":4,"courseId":"266906839","hasPhoto":false}}
+{"time":"2026-09-12T07:18:57.578Z","type":"manual_sign_result","payload":{"activeId":8000175124665,"result":"[位置]您已签到过了","success":false}}
+{"time":"2026-09-12T07:19:14.123Z","type":"poll_shutdown","payload":{"reason":"signal"}}

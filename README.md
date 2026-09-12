@@ -7,7 +7,12 @@
 
 超星学习通自动签到工具，支持普通签到、拍照签到、位置签到、二维码签到、手势签到、签到码签到。提供 Web 界面和 CLI 两种使用方式。
 
-## 功能
+## 当前功能
+- **多签到类型**：普通、拍照、位置
+- **拍照签到**：支持本地上传图片、以及快速上传照片至云端
+- **定位签到**：可接入高德的key，也可以自己设定地图起始位置，支持使用地图签到，支持多种定位转换协议
+
+## 最终功能（未实现，或者说之前已经实现了但是现在不管用了）
 
 - **多签到类型**：普通、拍照、手势、位置、二维码、签到码
 - **位置签到**：集成高德地图，支持地址搜索、点击选点、坐标自动转换（BD-09/WGS-84/GCJ-02）
@@ -60,35 +65,42 @@ cd chaoxing-signin
 pnpm install
 ```
 
-### 3. 配置 env.json
+### 3. 配置
 
-复制模板并填入配置（主要是手机端 User-Agent，用于拍照和位置签到）：
+**env.json**（项目根目录，含手机端 UA 等配置）：
 
 ```bash
-cp apps/server/src/env.example.json apps/server/src/env.json
+cp env.example.json env.json
 ```
 
-对于User-Agent，请通过手机端抓包查看
+编辑 `env.json`，填入 `webim.userAgent`（通过手机端超星 App 抓包获取）。
 
-编辑 `apps/server/src/env.json`，填入 `webim.userAgent`（从手机端超星 App 抓包获取）。
+**.env**（项目根目录，端口等环境变量）：
 
-### 4. 开发模式（前后端同时启动）
+```bash
+cp .env.example .env
+```
+
+编辑 `.env`，按需修改端口等配置。
+
+
+### 4. 生产部署
+
+```bash
+pnpm build      # 构建前后端
+pnpm serve      # 启动后端服务（提供静态页面 + API）
+```
+
+访问 `http://localhost:5000`（端口可在 `.env` 中修改）即可调试后端界面。
+
+
+### 5.前后端同时启动
 
 ```bash
 pnpm dev
 ```
 
-浏览器自动打开前端页面，后端 API 在 `http://localhost:5000`。
-
-### 5. 生产部署、启动
-
-```bash
-pnpm build      # 构建前后端
-pnpm dev        #快速启动前后端
-pnpm serve      # 启动后端服务（提供静态页面 + API）
-```
-
-访问 `http://localhost:5000` 即可使用 Web 界面。
+前端开发服务器在 `http://localhost:3000`，后端 API 在 `http://localhost:5000`。
 
 ### 6. CLI 模式（命令行签到）
 
@@ -108,7 +120,9 @@ docker run -d -p 80:80 -p 5000:5000 ghcr.io/cxorz/chaoxing-signin
 
 ## 配置说明
 
-### env.json（`apps/server/src/env.json`）
+### env.json（项目根目录）
+
+######总结注意：userAgent是最重要的，先填这个，获取UA一般要通过手机抓包获取
 
 | 字段 | 说明 |
 |---|---|
@@ -118,6 +132,13 @@ docker run -d -p 80:80 -p 5000:5000 ghcr.io/cxorz/chaoxing-signin
 | `monitor.pollInterval` | 轮询间隔秒数（默认 30） |
 | `photo.auto` | 是否自动拍照签到 |
 | `photo.defaultPath` | 默认照片路径 |
+
+### .env（项目根目录）
+
+| 字段 | 说明 | 默认值 |
+|---|---|---|
+| `PORT` | 后端服务端口 | 5000 |
+| `VITE_PORT` | 前端开发服务器端口（仅开发模式） | 3000 |
 
 ### 地图设置（Web 界面左下角）
 

@@ -1,0 +1,27 @@
+{
+  "env": {
+    "SERVERLESS": false
+  },
+  "tencent": {
+    "secretId": "",
+    "secretKey": ""
+  },
+  "webim": {
+    "userAgent": "",
+    "url": "",
+    "extraHeaders": {},
+    "credentials": {
+      "tuid": "",
+      "token": "",
+      "name": ""
+    }
+  },
+  "monitor": {
+    "mode": "poll",
+    "pollInterval": 30
+  },
+  "photo": {
+    "auto": true,
+    "defaultPath": ""
+  }
+}
