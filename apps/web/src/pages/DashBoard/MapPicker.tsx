@@ -1,11 +1,55 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, CSSProperties } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { gcj02ToWgs84 } from '../../utils/gcoord';
+
+interface MapSettings {
+  amapKey: string;
+  defaultCity: string;
+  defaultLat: number;
+  defaultLon: number;
+  coordConvert: boolean;
+}
+
+const DEFAULT_MAP_SETTINGS: MapSettings = {
+  amapKey: '',
+  defaultCity: '北京',
+  defaultLat: 39.9042,
+  defaultLon: 116.4074,
+  coordConvert: true,
+};
+
+function loadMapSettings(): MapSettings {
+  try {
+    const raw = localStorage.getItem('map_settings');
+    if (raw) return { ...DEFAULT_MAP_SETTINGS, ...JSON.parse(raw) };
+  } catch { /* ignore */ }
+  return DEFAULT_MAP_SETTINGS;
+}
+
+interface SearchTip {
+  name: string;
+  district: string;
+  location: string;
+  address?: string;
+}
 
 interface MapPickerProps {
   onClose: () => void;
   onConfirm: (lat: string, lon: string, address: string) => void;
 }
+
+const inputStyle: CSSProperties = {
+  width: '100%',
+  padding: '8px 12px',
+  fontSize: '0.9rem',
+  border: '1px solid #e2e8f0',
+  borderRadius: 8,
+  background: '#f8fafc',
+  color: '#334155',
+  outline: 'none',
+  boxSizing: 'border-box',
+};
 
 export default function MapPicker({ onClose, onConfirm }: MapPickerProps) {
   const mapRef = useRef<HTMLDivElement>(null);
@@ -14,6 +58,33 @@ export default function MapPicker({ onClose, onConfirm }: MapPickerProps) {
   const [lat, setLat] = useState('');
   const [lon, setLon] = useState('');
   const [address, setAddress] = useState('');
+  const settings = useRef<MapSettings>(loadMapSettings());
+
+  // 搜索状态
+  const [searchText, setSearchText] = useState('');
+  const [searchResults, setSearchResults] = useState<SearchTip[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // 设置标记并转换坐标（高德GCJ-02 → WGS-84 GPS坐标）
+  const setMarkerAndCoords = (gcjLat: number, gcjLng: number) => {
+    if (!mapInstance.current) return;
+    const latlng: L.LatLngExpression = [gcjLat, gcjLng];
+    if (markerRef.current) {
+      markerRef.current.setLatLng(latlng);
+    } else {
+      markerRef.current = L.marker(latlng).addTo(mapInstance.current);
+    }
+    if (settings.current.coordConvert) {
+      const [wgsLng, wgsLat] = gcj02ToWgs84(gcjLng, gcjLat);
+      setLat(wgsLat.toFixed(6));
+      setLon(wgsLng.toFixed(6));
+    } else {
+      setLat(gcjLat.toFixed(6));
+      setLon(gcjLng.toFixed(6));
+    }
+  };
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -26,7 +97,7 @@ export default function MapPicker({ onClose, onConfirm }: MapPickerProps) {
     });
 
     const map = L.map(mapRef.current, {
-      center: [39.9, 116.4], // 默认北京
+      center: [settings.current.defaultLat, settings.current.defaultLon],
       zoom: 12,
       layers: [amapLayer],
     });
@@ -44,15 +115,7 @@ export default function MapPicker({ onClose, onConfirm }: MapPickerProps) {
 
     // 点击地图设置标记
     map.on('click', (e: L.LeafletMouseEvent) => {
-      const { lat: clickedLat, lng: clickedLng } = e.latlng;
-      setLat(clickedLat.toFixed(6));
-      setLon(clickedLng.toFixed(6));
-
-      if (markerRef.current) {
-        markerRef.current.setLatLng(e.latlng);
-      } else {
-        markerRef.current = L.marker(e.latlng).addTo(map);
-      }
+      setMarkerAndCoords(e.latlng.lat, e.latlng.lng);
     });
 
     return () => {
@@ -61,9 +124,52 @@ export default function MapPicker({ onClose, onConfirm }: MapPickerProps) {
     };
   }, []);
 
+  // 搜索输入（防抖 300ms）
+  const handleSearchInput = (text: string) => {
+    setSearchText(text);
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    if (!text.trim() || !settings.current.amapKey) {
+      setSearchResults([]);
+      setShowResults(false);
+      return;
+    }
+    setSearching(true);
+    searchTimer.current = setTimeout(async () => {
+      try {
+        const url = `https://restapi.amap.com/v3/assistant/inputtips?key=${settings.current.amapKey}&keywords=${encodeURIComponent(text.trim())}&city=${encodeURIComponent(settings.current.defaultCity)}&datatype=all`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.status === '1' && Array.isArray(data.tips)) {
+          setSearchResults(data.tips.filter((t: any) => t.location && t.location.length > 0).slice(0, 10));
+          setShowResults(true);
+        } else {
+          setSearchResults([]);
+        }
+      } catch {
+        setSearchResults([]);
+      } finally {
+        setSearching(false);
+      }
+    }, 300);
+  };
+
+  // 选择搜索结果
+  const handleSelectTip = (tip: SearchTip) => {
+    const parts = tip.location.split(',');
+    const lng = Number(parts[0]);
+    const latNum = Number(parts[1]);
+    if (!mapInstance.current || isNaN(latNum) || isNaN(lng)) return;
+    mapInstance.current.setView([latNum, lng], 16);
+    setMarkerAndCoords(latNum, lng);
+    const fullAddress = tip.address ? `${tip.name}（${tip.address}）` : tip.name;
+    setAddress(fullAddress);
+    setSearchText(fullAddress);
+    setShowResults(false);
+  };
+
   const handleConfirm = () => {
     if (!lat || !lon) {
-      alert('请先在地图上点击选择一个位置');
+      alert('请先在地图上点击或搜索选择一个位置');
       return;
     }
     onConfirm(lat, lon, address || '未填写地址');
@@ -80,31 +186,58 @@ export default function MapPicker({ onClose, onConfirm }: MapPickerProps) {
         width: 'min(700px, 90vw)', maxHeight: '90vh', overflow: 'auto',
       }}>
         <h3 style={{ margin: '0 0 12px', color: '#334155' }}>选择签到位置</h3>
-        <p style={{ color: '#8290a3', fontSize: '0.85rem', margin: '0 0 8px' }}>点击地图选择坐标，可手动填写地址</p>
+        <p style={{ color: '#8290a3', fontSize: '0.85rem', margin: '0 0 8px' }}>点击地图或搜索地址选择坐标</p>
+        {/* 搜索栏 */}
+        <div style={{ position: 'relative', marginBottom: 12 }}>
+          <input
+            style={inputStyle}
+            placeholder={settings.current.amapKey ? '搜索地点（如：天安门、xx大学）' : '请先在左下角地图设置中配置高德API Key后可搜索'}
+            value={searchText}
+            onChange={(e) => handleSearchInput(e.target.value)}
+            onFocus={() => { if (searchResults.length > 0) setShowResults(true); }}
+            onBlur={() => setTimeout(() => setShowResults(false), 200)}
+          />
+          {searching && <span style={{ position: 'absolute', right: 12, top: 10, color: '#94a3b8', fontSize: '0.8rem' }}>搜索中...</span>}
+          {showResults && searchResults.length > 0 && (
+            <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1px solid #e2e8f0', borderRadius: 8, maxHeight: 200, overflow: 'auto', zIndex: 10, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+              {searchResults.map((tip, i) => (
+                <div
+                  key={i}
+                  onMouseDown={() => handleSelectTip(tip)}
+                  style={{ padding: '8px 12px', cursor: 'pointer', borderBottom: i < searchResults.length - 1 ? '1px solid #f1f5f9' : 'none' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = '#f1f5f9')}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <div style={{ fontWeight: 500, fontSize: '0.9rem', color: '#334155' }}>{tip.name}</div>
+                  {tip.district && <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>{tip.district}{tip.address ? ' · ' + tip.address : ''}</div>}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
         <div ref={mapRef} style={{ width: '100%', height: 350, borderRadius: 8, marginBottom: 12 }} />
         <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
           <input
-            className='input-area'
-            placeholder='纬度（点击地图自动填入）'
+            style={{ ...inputStyle, flex: 1 }}
+            placeholder='纬度（GPS坐标，自动填入）'
             value={lat}
             readOnly
-            style={{ flex: 1 }}
           />
           <input
-            className='input-area'
-            placeholder='经度（点击地图自动填入）'
+            style={{ ...inputStyle, flex: 1 }}
+            placeholder='经度（GPS坐标，自动填入）'
             value={lon}
             readOnly
-            style={{ flex: 1 }}
           />
         </div>
         <input
-          className='input-area'
+          style={{ ...inputStyle, marginBottom: 4 }}
           placeholder='地址（如：河南省郑州市xx大学）'
           value={address}
           onChange={(e) => setAddress(e.target.value)}
-          style={{ width: '100%', marginBottom: 12 }}
         />
+        {settings.current.coordConvert && <p style={{ fontSize: '0.75rem', color: '#94a3b8', margin: '0 0 12px' }}>已自动将高德坐标转换为GPS坐标(WGS-84)，签到偏差可降至最低</p>}
+        {!settings.current.coordConvert && <div style={{ marginBottom: 12 }} />}
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
           <button
             onClick={onClose}
@@ -123,3 +256,4 @@ export default function MapPicker({ onClose, onConfirm }: MapPickerProps) {
     </div>
   );
 }
+
