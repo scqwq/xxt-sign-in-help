@@ -6,14 +6,16 @@ import bodyparser from 'koa-bodyparser';
 import multiparty from 'multiparty';
 import path from 'path';
 import serverless from 'serverless-http';
-import { preSign, traverseCourseActivity } from './functions/activity';
+import { getPPTActiveInfo, getSignType, preSign, traverseCourseActivity } from './functions/activity';
 import { GeneralSign } from './functions/general';
 import { LocationSign } from './functions/location';
 import { PhotoSign, uploadPhoto } from './functions/photo';
 import { QRCodeSign } from './functions/qrcode';
 import { QrCodeScan } from './functions/tencent.qrcode';
 import { getAccountInfo, getCourses, getPanToken, userLogin } from './functions/user';
-import { getJsonObject } from './utils/file';
+import { getJsonObject, storeUser } from './utils/file';
+import { dbGetUser, dbGetUserCourses, dbUpsertCourse, dbDeleteCourse } from './utils/db';
+import { delay } from './utils/helper';
 import { writeMonitorLog } from './utils/monitorLogger';
 import { restoreTerminal } from './utils/terminal';
 const ENVJSON = getJsonObject('env.json');
@@ -54,6 +56,8 @@ router.post('/login', async (ctx) => {
     return;
   }
   params.name = (await getAccountInfo(params)) || '获取失败';
+  // 保存到 storage.json，使手动签到 / 课程记录 / 云盘上传等功能可按 phone 查到凭证
+  storeUser(phone, { phone, params });
   console.log(ctx.request.body);
   ctx.body = params;
 });
@@ -311,7 +315,11 @@ router.post('/monitor/start/:phone', async (ctx) => {
     return;
   }
   const monitorIsTypeScript = !fs.existsSync(path.join(__dirname, 'monitor.js'));
-  const monitorScript = path.join(__dirname, monitorIsTypeScript ? 'monitor.ts' : 'monitor.js');
+  // env.json 的 monitor.mode 为 "poll" 时走 HTTP 轮询（不依赖 WebIM），否则走 WebSocket 监听。
+  let monitorMode = 'websocket';
+  try { monitorMode = getJsonObject('env.json').monitor?.mode || 'websocket'; } catch { /* 缺失走默认 */ }
+  const monitorFile = monitorMode === 'poll' ? 'poll' : 'monitor';
+  const monitorScript = path.join(__dirname, monitorIsTypeScript ? `${monitorFile}.ts` : `${monitorFile}.js`);
   let authPayload: string | undefined;
   // 当前 Web 端发送 { payload: base64 }；兼容旧版本直接发送 base64 字符串。
   if (parsedBody && typeof parsedBody === 'object' && typeof parsedBody.payload === 'string') {
@@ -389,6 +397,147 @@ router.post('/monitor/start/:phone', async (ctx) => {
   });
   // 监听服务已启动即立即响应，不等待 IM 长连接建立，避免前端按钮永久卡住。
   ctx.body = { code: 200, msg: 'Monitor starting' };
+});
+
+// ===================== 课程管理 CRUD =====================
+
+router.get('/courses/:phone', (ctx) => {
+  ctx.body = { code: 200, courses: dbGetUserCourses(ctx.params.phone) };
+});
+
+router.post('/courses/:phone', (ctx) => {
+  const body = ctx.request.body as any;
+  const { courseId, courseName, autoSign, photoPath } = body;
+  if (!courseId) { ctx.status = 400; ctx.body = { code: 400, msg: '缺少 courseId' }; return; }
+  dbUpsertCourse(ctx.params.phone, { courseId: String(courseId), courseName, autoSign, photoPath });
+  ctx.body = { code: 200, courses: dbGetUserCourses(ctx.params.phone) };
+});
+
+router.delete('/courses/:phone/:courseId', (ctx) => {
+  dbDeleteCourse(ctx.params.phone, ctx.params.courseId);
+  ctx.body = { code: 200, courses: dbGetUserCourses(ctx.params.phone) };
+});
+
+// ===================== 云盘上传 =====================
+
+router.post('/upload-pan/:phone', async (ctx) => {
+  const phone = ctx.params.phone;
+  const user = dbGetUser(phone);
+  if (!user || !user.params || !user.params._uid) { ctx.body = { success: false, msg: '用户凭证不存在，请重新登录' }; return; }
+  const cookies = { ...user.params } as any;
+
+  const contentType = ctx.request.headers['content-type'] || '';
+  if (!contentType.includes('multipart')) { ctx.body = { success: false, msg: '请上传文件' }; return; }
+
+  const form = new multiparty.Form();
+  const fileChunks: any[] = [];
+  await new Promise<void>((resolve) => {
+    form.on('part', (part: any) => {
+      if (part.filename !== undefined) {
+        part.on('data', (chunk: any) => fileChunks.push(chunk));
+        part.on('close', () => part.resume());
+      }
+    });
+    form.on('close', () => resolve());
+    form.parse(ctx.req);
+  });
+  const buffer = Buffer.concat(fileChunks);
+  if (buffer.length === 0) { ctx.body = { success: false, msg: '未收到文件' }; return; }
+
+  try {
+    const tokenRes = await getPanToken(cookies);
+    const token = JSON.parse(tokenRes)._token;
+    const uploadRes = await uploadPhoto({ ...cookies, buffer, token });
+    const objectId = JSON.parse(uploadRes).objectId;
+    if (objectId) {
+      ctx.body = { success: true, msg: '上传成功', objectId };
+    } else {
+      ctx.body = { success: false, msg: '上传失败，未获取到 objectId', raw: uploadRes };
+    }
+  } catch (e: any) {
+    ctx.body = { success: false, msg: `上传异常：${e?.message || e}` };
+  }
+});
+
+// ===================== 手动签到统一入口 =====================
+
+router.post('/monitor/sign/:phone', async (ctx) => {
+  const phone = ctx.params.phone;
+  const contentType = ctx.request.headers['content-type'] || '';
+
+  // 从 SQLite 查该用户的凭证
+  const user = dbGetUser(phone);
+  if (!user || !user.params || !user.params._uid) { ctx.body = { success: false, msg: '用户凭证不存在，请重新登录账号' }; return; }
+  const cookies = { ...user.params } as any;
+  const name = user.params.name || phone;
+
+  let body: any;
+  let photoBuffer: Buffer | null = null;
+
+  if (contentType.includes('multipart')) {
+    // 拍照签到：multipart 表单（文件 + 字段）
+    const form = new multiparty.Form();
+    const fields: any = {};
+    const fileChunks: any[] = [];
+    await new Promise<void>((resolve) => {
+      form.on('part', (part: any) => {
+        if (part.filename !== undefined) {
+          part.on('data', (chunk: any) => fileChunks.push(chunk));
+          part.on('close', () => part.resume());
+        }
+      });
+      form.on('field', (n: string, v: string) => { fields[n] = v; });
+      form.on('close', () => { photoBuffer = Buffer.concat(fileChunks); resolve(); });
+      form.parse(ctx.req);
+    });
+    body = fields;
+  } else {
+    body = ctx.request.body as any;
+  }
+
+  const { activeId, otherId, courseId, classId } = body;
+  if (!activeId) { ctx.body = { success: false, msg: '缺少 activeId' }; return; }
+  const oid = Number(otherId);
+
+  writeMonitorLog(phone, 'manual_sign_request', { activeId, otherId: oid, courseId, hasPhoto: !!photoBuffer });
+
+  try {
+    // 预签
+    if (courseId && classId) {
+      await preSign({ activeId, courseId, classId, ...cookies });
+    }
+
+    let result = '';
+    if (oid === 2) {
+      // 二维码签到
+      const { enc, lat, lon, address, altitude } = body;
+      result = await QRCodeSign({ enc, name, activeId, address, lat, lon, altitude, ...cookies });
+    } else if (oid === 4) {
+      // 位置签到
+      const { lat, lon, address } = body;
+      result = await LocationSign({ name, activeId, lat, lon, address, ...cookies });
+    } else if (oid === 0 && photoBuffer) {
+      // 拍照签到（上传文件）
+      const tokenRes = await getPanToken(cookies);
+      const token = JSON.parse(tokenRes)._token;
+      const uploadRes = await uploadPhoto({ ...cookies, buffer: photoBuffer, token });
+      const objectId = JSON.parse(uploadRes).objectId;
+      if (!objectId) { result = '[拍照]上传失败，未获取到 objectId'; }
+      else { result = await PhotoSign({ name, activeId, objectId, ...cookies }); }
+    } else {
+      // 普通 / 手势 / 签到码
+      result = await GeneralSign({ name, activeId, ...cookies });
+    }
+
+    const success = result.includes('签到成功');
+    writeMonitorLog(phone, 'manual_sign_result', { activeId, result, success });
+    // 注入到 monitor 事件流，让右侧任务流能看到手动签到结果
+    appendMonitorEvent(phone, { type: 'result', activeId, signType: getSignType({ otherId: oid, ifphoto: photoBuffer ? 1 : 0 }), result, time: Date.now(), manual: true });
+    ctx.body = { success, msg: result };
+  } catch (e: any) {
+    writeMonitorLog(phone, 'manual_sign_error', { activeId, message: e?.message, stack: e?.stack });
+    ctx.body = { success: false, msg: `签到异常：${e?.message || e}` };
+  }
 });
 
 app.use(bodyparser({ enableTypes: ['json', 'form', 'text'] }));

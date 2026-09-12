@@ -1,3 +1,18 @@
+// node:sqlite 类型声明（@types/node@18 尚未内置，Node 22.5+ 实验性模块）
+declare module 'node:sqlite' {
+  interface StatementSync {
+    run(...params: any[]): void;
+    get(...params: any[]): any;
+    all(...params: any[]): any[];
+  }
+  class DatabaseSync {
+    constructor(location: string);
+    exec(sql: string): void;
+    prepare(sql: string): StatementSync;
+    close(): void;
+  }
+}
+
 interface MonitorConfig {
   delay: number;
   lon: number;
@@ -45,6 +60,7 @@ interface User {
 interface CourseType {
   courseId: string;
   classId: string;
+  courseName?: string;
 }
 
 interface Activity {

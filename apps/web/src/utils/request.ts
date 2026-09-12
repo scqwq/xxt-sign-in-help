@@ -3,7 +3,7 @@ type FetchParams = {
   headers?: {
     [index: string]: any;
   };
-  method?: 'POST' | 'GET';
+  method?: 'POST' | 'GET' | 'DELETE';
   body?: any;
   type?: 'json' | 'text';
 };

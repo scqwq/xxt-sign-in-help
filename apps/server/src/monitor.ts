@@ -13,6 +13,7 @@ import { QRCodeSign } from './functions/qrcode';
 import { QrCodeScan } from './functions/tencent.qrcode';
 import { getIMParams, getLocalUsers, userLogin } from './functions/user';
 import { getJsonObject, getStoredUser, storeUser } from './utils/file';
+import { dbGetUser, dbGetAllUsers, dbUpdateUserConfig } from './utils/db';
 import { delay } from './utils/helper';
 import { sendEmail } from './utils/mailer';
 import { writeMonitorLog } from './utils/monitorLogger';
@@ -116,18 +117,7 @@ async function configure(phone: string) {
     config!.mailing = mailing;
     config!.cqserver = cqserver;
 
-    const data = getJsonObject('configs/storage.json');
-    for (let i = 0; i < data.users.length; i++) {
-      if (data.users[i].phone === phone) {
-        data.users[i].monitor = monitor;
-        data.users[i].mailing = mailing;
-        data.users[i].cqserver = cqserver;
-        break;
-      }
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    fs.writeFile(path.join(__dirname, './configs/storage.json'), JSON.stringify(data), 'utf8', () => { });
+    dbUpdateUserConfig(phone, { monitor, mailing, cqserver });
   }
 
   return JSON.parse(JSON.stringify({ mailing: config!.mailing, monitor: config!.monitor, cqserver: config!.cqserver }));
@@ -356,7 +346,8 @@ process.on('unhandledRejection', (reason) => {
       params.phone = phone;
     } else {
       // 使用本地储存的参数
-      const user = getJsonObject('configs/storage.json').users[userItem];
+      const users = dbGetAllUsers();
+      const user = users[userItem];
       params = user.params;
       params.phone = user.phone;
     }
@@ -369,6 +360,12 @@ process.on('unhandledRejection', (reason) => {
   if (IM_Params === 'AuthFailed') {
     if (process.send) process.send('authfail');
     process.exit(0);
+  }
+  if (IM_Params === 'WebIMUnavailable') {
+    const message = 'WebIM 服务端当前维护中，无法获取 IM 参数，监听进程将退出。';
+    writeMonitorLog(params.phone || 'cli', 'webim_unavailable', { message });
+    if (process.send) process.send({ type: 'startup_error', message });
+    process.exit(1);
   }
   params.tuid = IM_Params.myTuid;
   params.name = IM_Params.myName;
@@ -467,6 +464,8 @@ process.on('unhandledRejection', (reason) => {
       console.log(red('[发生异常]'), msg);
     },
   });
+
+  openConnection();
 
   console.log(blue(`[监听中] ${config.cqserver.cq_enabled ? 'CQ服务器已连接' : ''} ${config.mailing?.enabled ? '邮件推送已开启' : ''}...`));
 })().catch((error) => {

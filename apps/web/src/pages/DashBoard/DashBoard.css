@@ -1,143 +1,162 @@
-.neum-button {
-  height: 135px;
-  width: 135px;
-  border-radius: 50%;
-  background: #ecf0f3;
-  box-shadow: 16px 16px 32px #c9cccf, -16px -16px 32px #ffffff;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #4c5e6d !important;
-  transition: 0.3s;
-}
-
-.neum-button:hover {
-  transform: scale(1.05);
-  background: #e9eef1;
-  transition: 0.3s;
-}
-
-.text-button {
-  padding: 1rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  direction: rtl;
-}
-
-.hidden {
-  opacity: 0;
-}
-
-.input-area {
-  padding-left: 10px;
-  margin: 0 auto 1rem;
-  height: 3rem;
-  font-size: 1.25rem;
-  color: #536f85;
-  background: #ecf0f3;
-  outline: none;
-  border: none;
-  border-radius: 10px;
-  box-shadow: inset 2px 2px 3px #d7dadd, inset -2px -2px 3px #ffffff;
-}
-
-.neum-form {
-  color: #4c5e6d !important;
-  min-height: 300px;
-  min-width: 250px;
-  max-width: 300px;
-  padding: 2rem;
-  border-radius: 20px;
-  background: #ecf0f3;
-  box-shadow: 16px 16px 32px #c9cccf, -16px -16px 32px #ffffff;
-  transition: 0.8s;
-}
-
-.form-height {
-  min-height: 100px !important;
-}
-
-.neum-form-button {
-  height: 60px;
-  width: 135px;
-  margin: 2rem auto 0 !important;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #4c5e6d !important;
-  border-radius: 25px !important;
-  background: #ecf0f3;
-  box-shadow: 7px 7px 14px #c9cccf, -7px -7px 14px #ffffff;
-  transition: 0.3s;
-}
-
-.checked::before {
-  display: inline-block;
-  vertical-align: bottom;
-  content: '';
-  height: 2rem;
-  width: 2rem;
-  border-radius: 10px;
-  background-image: url('../../../public/assets/check.svg');
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 70%;
-  box-shadow: inset 2px 2px 3px #d7dadd, inset -2px -2px 3px #ffffff;
-}
-
-.unchecked::before {
-  display: inline-block;
-  vertical-align: bottom;
-  content: '';
-  height: 2rem;
-  width: 2rem;
-  border-radius: 10px;
-  box-shadow: inset 2px 2px 3px #d7dadd, inset -2px -2px 3px #ffffff;
-}
-
-h1 {
-  color: #4c5e6d;
-}
-
-.form-title {
-  display: inline-block;
-  margin: 0 auto 2rem;
-}
-
-.form-content {
-  opacity: 1;
-  transition: 0.4s;
-}
-
-@media screen and (max-width: 500px) {
-  .form-title {
-    display: inline-block;
-    margin: 0 auto 2rem;
-    font-size: 1.7rem;
-  }
-}
+/* ===== 左右分栏布局 ===== */
 .dashboard-page {
-  width: min(900px, calc(100vw - 32px));
-  padding: 40px 0 80px;
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 24px;
+  width: min(1200px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 24px 0 80px;
   color: #334155;
 }
 
-.monitor-panel {
-  padding: 28px;
-  border-radius: 24px !important;
-  background: rgba(255,255,255,.7) !important;
-  box-shadow: 12px 12px 28px #cdd1d4, -12px -12px 28px #fff !important;
-  text-align: left;
-  margin-bottom: 36px;
+.dashboard-left,
+.dashboard-right {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.monitor-heading, .sign-feed-heading, .sign-event { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-.monitor-heading h2, .sign-feed-heading h3 { margin: 4px 0; }
-.eyebrow { margin: 0; color: #64748b; font-size: .8rem; letter-spacing: .12em; }
-.muted { color: #8290a3; font-size: .88rem; }
-.monitor-control { display: flex; align-items: center; gap: 8px; }
-.sign-feed-heading { margin-top: 30px; }
-.sign-feed { margin-top: 12px; }
-.sign-event { padding: 15px 0; border-top: 1px solid #e2e8f0; }
-.sign-event strong, .sign-event span, .sign-event small { display: block; }
-.event-right { text-align: right; color: #16a34a; }
-.event-right small { color: #94a3b8; margin-top: 4px; }
-.empty-feed { padding: 28px 0 8px; color: #94a3b8; text-align: center; }
+/* ===== 通用面板 ===== */
+.panel {
+  padding: 24px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 8px 8px 16px #c9cccf, -8px -8px 16px #ffffff;
+}
+
+.panel h3 {
+  margin: 0 0 16px;
+  font-size: 1.1rem;
+  color: #4c5e6d;
+}
+
+.eyebrow {
+  color: #64748b;
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.muted {
+  color: #8290a3;
+  font-size: 0.88rem;
+}
+
+/* ===== 左侧课程卡片 ===== */
+.course-card {
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #ecf0f3;
+  box-shadow: 4px 4px 8px #c9cccf, -4px -4px 8px #ffffff;
+  margin-bottom: 10px;
+}
+
+.course-card .course-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.course-card .course-name {
+  font-weight: 600;
+  color: #334155;
+  font-size: 0.95rem;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.course-card .photo-path-input {
+  width: 100%;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 8px;
+  background: #ecf0f3;
+  box-shadow: inset 2px 2px 4px #c9cccf, inset -2px -2px 4px #ffffff;
+  font-size: 0.82rem;
+  color: #536f85;
+  outline: none;
+}
+
+.course-card .delete-btn {
+  cursor: pointer;
+  color: #94a3b8;
+  font-size: 1.1rem;
+  margin-left: 8px;
+}
+.course-card .delete-btn:hover { color: #ef4444; }
+
+/* ===== 右侧任务流 ===== */
+.sign-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.sign-event {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 0;
+  border-top: 1px solid #e2e8f0;
+}
+
+.sign-event:first-child { border-top: none; }
+
+.sign-event-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.sign-event-left strong { display: block; color: #334155; }
+.sign-event-left .muted { display: block; margin-top: 2px; }
+
+.sign-event-right {
+  text-align: right;
+  flex-shrink: 0;
+}
+.sign-event-right .result-text { color: #16a34a; font-weight: 500; }
+.sign-event-right .result-text.error { color: #dc2626; }
+.sign-event-right small { display: block; color: #94a3b8; margin-top: 2px; }
+
+.sign-event-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.empty-feed {
+  padding: 28px 0 8px;
+  color: #8290a3;
+  text-align: center;
+}
+
+/* ===== 手动签到表单 ===== */
+.manual-sign-form {
+  padding: 12px 0 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.manual-sign-form .input-area {
+  height: 2.6rem;
+  padding: 0 12px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 10px;
+  background: #ecf0f3;
+  box-shadow: inset 3px 3px 6px #c9cccf, inset -3px -3px 6px #ffffff;
+  color: #536f85;
+  outline: none;
+}
+
+/* ===== 响应式 ===== */
+@media (max-width: 768px) {
+  .dashboard-page {
+    grid-template-columns: 1fr;
+  }
+}

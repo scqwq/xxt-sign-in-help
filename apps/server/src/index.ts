@@ -7,6 +7,7 @@ import { getObjectIdFromcxPan, PhotoSign } from './functions/photo';
 import { QRCodeSign } from './functions/qrcode';
 import { getAccountInfo, getCourses, getLocalUsers, userLogin } from './functions/user';
 import { getJsonObject, storeUser } from './utils/file';
+import { dbGetAllUsers } from './utils/db';
 import { restoreTerminal } from './utils/terminal';
 
 restoreTerminal();
@@ -52,7 +53,8 @@ process.once('exit', restoreTerminal);
       params = { ...result, phone };
     } else {
       // 使用本地储存的参数
-      const jsonObject = getJsonObject('configs/storage.json').users[userItem];
+      const users = dbGetAllUsers();
+      const jsonObject = users[userItem];
       params = { ...jsonObject.params };
       params.phone = jsonObject.phone;
       configs.monitor = { ...jsonObject.monitor };

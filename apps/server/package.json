@@ -7,9 +7,13 @@
     "start": "node ./build/index.js",
     "serve": "node ./build/serve.js",
     "monitor": "node ./build/monitor.js",
+    "poll": "node ./build/poll.js",
+    "upload-pan": "node ./build/upload-pan.js",
     "dev:start": "ts-node ./src/index.ts",
     "dev:serve": "ts-node ./src/serve.ts",
     "dev:monitor": "ts-node ./src/monitor.ts",
+    "dev:poll": "ts-node ./src/poll.ts",
+    "dev:upload-pan": "ts-node ./src/upload-pan.ts",
     "lint": "eslint src --fix"
   },
   "dependencies": {

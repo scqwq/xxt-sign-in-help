@@ -25,3 +25,9 @@ export const monitor_start_api = baseUrl + '/monitor/start';
 export const monitor_stop_api = baseUrl + '/monitor/stop';
 
 export const monitor_events_api = baseUrl + '/monitor/events';
+
+export const courses_api = baseUrl + '/courses';
+
+export const manual_sign_api = baseUrl + '/monitor/sign';
+
+export const upload_pan_api = baseUrl + '/upload-pan';

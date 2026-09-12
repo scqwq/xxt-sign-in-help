@@ -3,8 +3,7 @@
   "include": [
     "./src",
     "./types",
-    "./src/env.json",
-    "./src/configs/storage.json"
+    "./src/env.json"
   ],
   "compilerOptions": {
     "outDir": "build"

@@ -36,3 +36,126 @@
 {"time":"2026-09-11T11:33:49.135Z","type":"im_params_ready","payload":{"tuid":"/DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\r\n"}}
 {"time":"2026-09-11T11:33:49.138Z","type":"child_stdout","payload":"[监听中]  ...\n"}
 {"time":"2026-09-11T11:33:49.207Z","type":"child_process_exit","payload":{"code":0,"signal":null,"pid":92760}}
+{"time":"2026-09-11T11:52:52.946Z","type":"start_request","payload":{"contentType":"application/json","rawBodyType":"string","parsedBodyType":"object","bodyKeys":["payload"]}}
+{"time":"2026-09-11T11:52:52.951Z","type":"fork_prepare","payload":{"script":"D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\monitor.ts","exists":true,"isTypeScript":true,"payloadLength":1456,"execPath":"D:\\moresoftware\\nodejs\\node.exe"}}
+{"time":"2026-09-11T11:52:53.024Z","type":"child_process_forked","payload":{"pid":89856}}
+{"time":"2026-09-11T11:53:23.664Z","type":"startup","payload":{"mode":"web","config":{"delay":0,"presetAddress":[{"lon":"113.516288","lat":"34.817038","address":"安徽省蚌埠市蚌埠坦克学院"}]}}}
+{"time":"2026-09-11T11:53:23.870Z","type":"child_stdout","payload":"WebIM 页面结构已变化，无法解析 myName/myToken/myTuid，建议重新登录或检查学习通页面结构。\n"}
+{"time":"2026-09-11T11:53:23.919Z","type":"child_process_exit","payload":{"code":0,"signal":null,"pid":89856}}
+{"time":"2026-09-11T12:07:15.077Z","type":"start_request","payload":{"contentType":"application/json","rawBodyType":"string","parsedBodyType":"object","bodyKeys":["payload"]}}
+{"time":"2026-09-11T12:07:15.081Z","type":"fork_prepare","payload":{"script":"D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\monitor.ts","exists":true,"isTypeScript":true,"payloadLength":1456,"execPath":"D:\\moresoftware\\nodejs\\node.exe"}}
+{"time":"2026-09-11T12:07:15.128Z","type":"child_process_forked","payload":{"pid":112552}}
+{"time":"2026-09-11T12:07:41.574Z","type":"startup","payload":{"mode":"web","config":{"delay":0,"presetAddress":[{"lon":"113.516288","lat":"34.817038","address":"安徽省蚌埠市蚌埠坦克学院"}]}}}
+{"time":"2026-09-11T12:07:41.847Z","type":"child_stdout","payload":"WebIM 页面结构已变化，无法解析 myName/myToken/myTuid，建议重新登录或检查学习通页面结构。\n"}
+{"time":"2026-09-11T12:07:41.895Z","type":"child_process_exit","payload":{"code":0,"signal":null,"pid":112552}}
+{"time":"2026-09-12T00:34:27.348Z","type":"start_request","payload":{"contentType":"application/json","rawBodyType":"string","parsedBodyType":"object","bodyKeys":["payload"]}}
+{"time":"2026-09-12T00:34:27.350Z","type":"fork_prepare","payload":{"script":"D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\monitor.ts","exists":true,"isTypeScript":true,"payloadLength":1456,"execPath":"D:\\moresoftware\\nodejs\\node.exe"}}
+{"time":"2026-09-12T00:34:27.386Z","type":"child_process_forked","payload":{"pid":31188}}
+{"time":"2026-09-12T00:34:50.115Z","type":"startup","payload":{"mode":"web","config":{"delay":0,"presetAddress":[{"lon":"113.516288","lat":"34.817038","address":"安徽省蚌埠市蚌埠坦克学院"}]}}}
+{"time":"2026-09-12T00:34:50.873Z","type":"webim_unavailable","payload":{"message":"WebIM 服务端当前维护中，无法获取 IM 参数，监听进程将退出。"}}
+{"time":"2026-09-12T00:34:50.878Z","type":"child_startup_error","payload":{"type":"startup_error","message":"WebIM 服务端当前维护中，无法获取 IM 参数，监听进程将退出。"}}
+{"time":"2026-09-12T00:34:50.926Z","type":"child_process_exit","payload":{"code":1,"signal":null,"pid":31188}}
+{"time":"2026-09-12T01:23:42.213Z","type":"start_request","payload":{"contentType":"application/json","rawBodyType":"string","parsedBodyType":"object","bodyKeys":["payload"]}}
+{"time":"2026-09-12T01:23:42.216Z","type":"fork_prepare","payload":{"script":"D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\poll.ts","exists":true,"isTypeScript":true,"payloadLength":1456,"execPath":"D:\\moresoftware\\nodejs\\node.exe"}}
+{"time":"2026-09-12T01:23:42.249Z","type":"child_process_forked","payload":{"pid":51276}}
+{"time":"2026-09-12T01:23:43.669Z","type":"poll_startup","payload":{"mode":"web","pollInterval":30}}
+{"time":"2026-09-12T01:23:43.973Z","type":"poll_ready","payload":{"realname":"零梁志"}}
+{"time":"2026-09-12T01:23:43.984Z","type":"child_stdout","payload":"[轮询监听中] 每 30 秒检查一次课程签到活动...\n"}
+{"time":"2026-09-12T01:28:00.255Z","type":"child_stdout","payload":"检测到活动：普通签到\n"}
+{"time":"2026-09-12T01:28:00.383Z","type":"poll_activity_detected","payload":{"activeId":3000170624234,"name":"普通签到","signType":"普通签到"}}
+{"time":"2026-09-12T01:28:00.386Z","type":"child_stdout","payload":"[检测到签到] 普通签到 - 普通签到\n"}
+{"time":"2026-09-12T01:28:00.659Z","type":"child_stdout","payload":"[预签]已请求\n"}
+{"time":"2026-09-12T01:28:00.836Z","type":"child_stdout","payload":"analysis 请求结果：success\n"}
+{"time":"2026-09-12T01:28:01.516Z","type":"poll_sign_result","payload":{"activeId":3000170624234,"signType":"普通签到","result":"[通用]签到成功"}}
+{"time":"2026-09-12T01:28:01.516Z","type":"child_stdout","payload":"[通用]签到成功\n"}
+{"time":"2026-09-12T01:28:01.519Z","type":"child_stdout","payload":"[签到结果] [通用]签到成功 - 零梁志\n"}
+{"time":"2026-09-12T01:28:33.298Z","type":"child_stdout","payload":"检测到活动：普通签到\n"}
+{"time":"2026-09-12T01:29:05.357Z","type":"child_stdout","payload":"检测到活动：普通签到\n"}
+{"time":"2026-09-12T01:29:37.292Z","type":"child_stdout","payload":"检测到活动：普通签到\n"}
+{"time":"2026-09-12T01:29:37.375Z","type":"poll_activity_detected","payload":{"activeId":3000170624293,"name":"普通签到","signType":"拍照签到"}}
+{"time":"2026-09-12T01:29:37.379Z","type":"child_stdout","payload":"[检测到签到] 普通签到 - 拍照签到\n"}
+{"time":"2026-09-12T01:29:37.507Z","type":"child_stdout","payload":"[预签]已请求\n"}
+{"time":"2026-09-12T01:29:37.637Z","type":"child_stdout","payload":"analysis 请求结果：success\n"}
+{"time":"2026-09-12T01:29:38.697Z","type":"poll_startup_error","payload":{"message":"Cannot read properties of undefined (reading 'length')","stack":"TypeError: Cannot read properties of undefined (reading 'length')\n    at getObjectIdFromcxPan (D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\functions\\photo.ts:64:34)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async signActivity (D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\poll.ts:100:26)\n    at async D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\poll.ts:207:26"}}
+{"time":"2026-09-12T01:29:38.701Z","type":"child_stderr","payload":"[轮询启动失败] TypeError: Cannot read properties of undefined (reading 'length')\n    at getObjectIdFromcxPan (D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\functions\\photo.ts:64:34)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async signActivity (D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\poll.ts:100:26)\n    at async D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\poll.ts:207:26\n"}
+{"time":"2026-09-12T01:29:38.704Z","type":"child_startup_error","payload":{"type":"startup_error","message":"Cannot read properties of undefined (reading 'length')"}}
+{"time":"2026-09-12T01:29:38.743Z","type":"child_process_exit","payload":{"code":1,"signal":null,"pid":51276}}
+{"time":"2026-09-12T01:30:40.516Z","type":"start_request","payload":{"contentType":"application/json","rawBodyType":"string","parsedBodyType":"object","bodyKeys":["payload"]}}
+{"time":"2026-09-12T01:30:40.519Z","type":"fork_prepare","payload":{"script":"D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\poll.ts","exists":true,"isTypeScript":true,"payloadLength":1456,"execPath":"D:\\moresoftware\\nodejs\\node.exe"}}
+{"time":"2026-09-12T01:30:40.537Z","type":"child_process_forked","payload":{"pid":41848}}
+{"time":"2026-09-12T01:30:41.973Z","type":"poll_startup","payload":{"mode":"web","pollInterval":30}}
+{"time":"2026-09-12T01:30:42.388Z","type":"poll_ready","payload":{"realname":"零梁志"}}
+{"time":"2026-09-12T01:30:42.392Z","type":"child_stdout","payload":"[轮询监听中] 每 30 秒检查一次课程签到活动...\n"}
+{"time":"2026-09-12T01:30:43.177Z","type":"child_stdout","payload":"检测到活动：普通签到\n"}
+{"time":"2026-09-12T01:30:43.406Z","type":"poll_activity_detected","payload":{"activeId":3000170624293,"name":"普通签到","signType":"拍照签到"}}
+{"time":"2026-09-12T01:30:43.410Z","type":"child_stdout","payload":"[检测到签到] 普通签到 - 拍照签到\n"}
+{"time":"2026-09-12T01:30:43.552Z","type":"child_stdout","payload":"[预签]已请求\n"}
+{"time":"2026-09-12T01:30:43.696Z","type":"child_stdout","payload":"analysis 请求结果：success\n"}
+{"time":"2026-09-12T01:30:44.699Z","type":"poll_startup_error","payload":{"message":"Cannot read properties of undefined (reading 'length')","stack":"TypeError: Cannot read properties of undefined (reading 'length')\n    at getObjectIdFromcxPan (D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\functions\\photo.ts:64:34)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async signActivity (D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\poll.ts:100:26)\n    at async D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\poll.ts:207:26"}}
+{"time":"2026-09-12T01:30:44.702Z","type":"child_stderr","payload":"[轮询启动失败] TypeError: Cannot read properties of undefined (reading 'length')\n    at getObjectIdFromcxPan (D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\functions\\photo.ts:64:34)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async signActivity (D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\poll.ts:100:26)\n    at async D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\poll.ts:207:26\n"}
+{"time":"2026-09-12T01:30:44.705Z","type":"child_startup_error","payload":{"type":"startup_error","message":"Cannot read properties of undefined (reading 'length')"}}
+{"time":"2026-09-12T01:30:44.758Z","type":"child_process_exit","payload":{"code":1,"signal":null,"pid":41848}}
+{"time":"2026-09-12T02:00:24.200Z","type":"start_request","payload":{"contentType":"application/json","rawBodyType":"string","parsedBodyType":"object","bodyKeys":["payload"]}}
+{"time":"2026-09-12T02:00:24.205Z","type":"fork_prepare","payload":{"script":"D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\poll.ts","exists":true,"isTypeScript":true,"payloadLength":1456,"execPath":"D:\\moresoftware\\nodejs\\node.exe"}}
+{"time":"2026-09-12T02:00:24.252Z","type":"child_process_forked","payload":{"pid":17520}}
+{"time":"2026-09-12T02:00:25.840Z","type":"poll_startup","payload":{"mode":"web","pollInterval":30}}
+{"time":"2026-09-12T02:00:26.169Z","type":"poll_ready","payload":{"realname":"零梁志"}}
+{"time":"2026-09-12T02:00:26.173Z","type":"child_stdout","payload":"[轮询监听中] 每 30 秒检查一次课程签到活动...\n"}
+{"time":"2026-09-12T02:02:32.320Z","type":"child_stdout","payload":"检测到活动：普通签到\n"}
+{"time":"2026-09-12T02:02:32.528Z","type":"poll_activity_detected","payload":{"activeId":8000175115198,"name":"普通签到","signType":"拍照签到"}}
+{"time":"2026-09-12T02:02:32.531Z","type":"child_stdout","payload":"[检测到签到] 普通签到 - 拍照签到\n"}
+{"time":"2026-09-12T02:02:32.686Z","type":"child_stdout","payload":"[预签]已请求\n"}
+{"time":"2026-09-12T02:02:32.815Z","type":"child_stdout","payload":"analysis 请求结果：success\n"}
+{"time":"2026-09-12T02:02:33.855Z","type":"poll_startup_error","payload":{"message":"Cannot read properties of undefined (reading 'length')","stack":"TypeError: Cannot read properties of undefined (reading 'length')\n    at getObjectIdFromcxPan (D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\functions\\photo.ts:64:34)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async signActivity (D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\poll.ts:128:26)\n    at async D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\poll.ts:235:26"}}
+{"time":"2026-09-12T02:02:33.858Z","type":"child_stderr","payload":"[轮询启动失败] TypeError: Cannot read properties of undefined (reading 'length')\n    at getObjectIdFromcxPan (D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\functions\\photo.ts:64:34)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async signActivity (D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\poll.ts:128:26)\n    at async D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\poll.ts:235:26\n"}
+{"time":"2026-09-12T02:02:33.861Z","type":"child_startup_error","payload":{"type":"startup_error","message":"Cannot read properties of undefined (reading 'length')"}}
+{"time":"2026-09-12T02:02:33.898Z","type":"child_process_exit","payload":{"code":1,"signal":null,"pid":17520}}
+{"time":"2026-09-12T02:03:02.679Z","type":"start_request","payload":{"contentType":"application/json","rawBodyType":"string","parsedBodyType":"object","bodyKeys":["payload"]}}
+{"time":"2026-09-12T02:03:02.683Z","type":"fork_prepare","payload":{"script":"D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\poll.ts","exists":true,"isTypeScript":true,"payloadLength":1456,"execPath":"D:\\moresoftware\\nodejs\\node.exe"}}
+{"time":"2026-09-12T02:03:02.709Z","type":"child_process_forked","payload":{"pid":45840}}
+{"time":"2026-09-12T02:03:04.389Z","type":"poll_startup","payload":{"mode":"web","pollInterval":30}}
+{"time":"2026-09-12T02:03:04.688Z","type":"poll_ready","payload":{"realname":"零梁志"}}
+{"time":"2026-09-12T02:03:04.692Z","type":"child_stdout","payload":"[轮询监听中] 每 30 秒检查一次课程签到活动...\n"}
+{"time":"2026-09-12T02:03:05.258Z","type":"child_stdout","payload":"检测到活动：普通签到\n"}
+{"time":"2026-09-12T02:03:05.336Z","type":"poll_activity_detected","payload":{"activeId":8000175115198,"name":"普通签到","signType":"拍照签到"}}
+{"time":"2026-09-12T02:03:05.339Z","type":"child_stdout","payload":"[检测到签到] 普通签到 - 拍照签到\n"}
+{"time":"2026-09-12T02:03:05.426Z","type":"child_stdout","payload":"[预签]已请求\n"}
+{"time":"2026-09-12T02:03:05.552Z","type":"child_stdout","payload":"analysis 请求结果：success\n"}
+{"time":"2026-09-12T02:03:06.499Z","type":"poll_startup_error","payload":{"message":"Cannot read properties of undefined (reading 'length')","stack":"TypeError: Cannot read properties of undefined (reading 'length')\n    at getObjectIdFromcxPan (D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\functions\\photo.ts:64:34)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async signActivity (D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\poll.ts:145:26)\n    at async D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\poll.ts:252:26"}}
+{"time":"2026-09-12T02:03:06.503Z","type":"child_stderr","payload":"[轮询启动失败] TypeError: Cannot read properties of undefined (reading 'length')\n    at getObjectIdFromcxPan (D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\functions\\photo.ts:64:34)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async signActivity (D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\poll.ts:145:26)\n    at async D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\poll.ts:252:26\n"}
+{"time":"2026-09-12T02:03:06.505Z","type":"child_startup_error","payload":{"type":"startup_error","message":"Cannot read properties of undefined (reading 'length')"}}
+{"time":"2026-09-12T02:03:06.541Z","type":"child_process_exit","payload":{"code":1,"signal":null,"pid":45840}}
+{"time":"2026-09-12T02:47:14.630Z","type":"start_request","payload":{"contentType":"application/json","rawBodyType":"string","parsedBodyType":"object","bodyKeys":["payload"]}}
+{"time":"2026-09-12T02:47:14.635Z","type":"fork_prepare","payload":{"script":"D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\poll.ts","exists":true,"isTypeScript":true,"payloadLength":1456,"execPath":"D:\\moresoftware\\nodejs\\node.exe"}}
+{"time":"2026-09-12T02:47:14.687Z","type":"child_process_forked","payload":{"pid":60496}}
+{"time":"2026-09-12T02:47:16.269Z","type":"poll_startup","payload":{"mode":"web","pollInterval":30}}
+{"time":"2026-09-12T02:47:16.569Z","type":"poll_ready","payload":{"realname":"零梁志"}}
+{"time":"2026-09-12T02:47:16.573Z","type":"child_stdout","payload":"[轮询监听中] 每 30 秒检查一次课程签到活动...\n"}
+{"time":"2026-09-12T02:48:20.043Z","type":"child_stdout","payload":"检测到活动：普通签到\n"}
+{"time":"2026-09-12T02:48:20.134Z","type":"poll_activity_detected","payload":{"activeId":8000175117416,"name":"普通签到","courseId":"266906839","courseName":"266906839","signType":"拍照签到","shouldAutoSign":false}}
+{"time":"2026-09-12T02:48:20.137Z","type":"child_stdout","payload":"[检测到签到] 266906839 - 拍照签到 (手动)\n"}
+{"time":"2026-09-12T02:48:51.645Z","type":"child_stdout","payload":"检测到活动：普通签到\n"}
+{"time":"2026-09-12T02:49:22.963Z","type":"child_stdout","payload":"检测到活动：普通签到\n"}
+{"time":"2026-09-12T02:49:54.392Z","type":"child_stdout","payload":"检测到活动：普通签到\n"}
+{"time":"2026-09-12T02:50:25.699Z","type":"child_stdout","payload":"检测到活动：普通签到\n"}
+{"time":"2026-09-12T02:50:57.028Z","type":"child_stdout","payload":"检测到活动：普通签到\n"}
+{"time":"2026-09-12T02:51:26.586Z","type":"child_process_exit","payload":{"code":null,"signal":"SIGTERM","pid":60496}}
+{"time":"2026-09-12T03:37:48.773Z","type":"start_request","payload":{"contentType":"application/json","rawBodyType":"string","parsedBodyType":"object","bodyKeys":["payload"]}}
+{"time":"2026-09-12T03:37:48.778Z","type":"fork_prepare","payload":{"script":"D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\poll.ts","exists":true,"isTypeScript":true,"payloadLength":1456,"execPath":"D:\\moresoftware\\nodejs\\node.exe"}}
+{"time":"2026-09-12T03:37:48.828Z","type":"child_process_forked","payload":{"pid":75560}}
+{"time":"2026-09-12T03:37:52.489Z","type":"poll_startup","payload":{"mode":"web","pollInterval":30}}
+{"time":"2026-09-12T03:37:52.836Z","type":"poll_ready","payload":{"realname":"零梁志"}}
+{"time":"2026-09-12T03:37:52.841Z","type":"child_stdout","payload":"[轮询监听中] 每 30 秒检查一次课程签到活动...\n"}
+{"time":"2026-09-12T03:37:53.429Z","type":"child_stdout","payload":"检测到活动：普通签到\n"}
+{"time":"2026-09-12T03:37:53.498Z","type":"poll_activity_detected","payload":{"activeId":8000175117416,"name":"普通签到","courseId":"266906839","courseName":"266906839","signType":"拍照签到","shouldAutoSign":false}}
+{"time":"2026-09-12T03:37:53.501Z","type":"child_stdout","payload":"[检测到签到] 266906839 - 拍照签到 (手动)\n"}
+{"time":"2026-09-12T03:38:25.039Z","type":"child_stdout","payload":"检测到活动：普通签到\n"}
+{"time":"2026-09-12T03:38:40.299Z","type":"manual_sign_request","payload":{"activeId":"8000175117416","otherId":0,"courseId":"266906839","hasPhoto":true}}
+{"time":"2026-09-12T03:38:42.494Z","type":"manual_sign_result","payload":{"activeId":"8000175117416","result":"[拍照]photoAuthError_PCR007","success":false}}
+{"time":"2026-09-12T03:38:56.179Z","type":"child_stdout","payload":"检测到活动：普通签到\n"}
+{"time":"2026-09-12T03:39:27.543Z","type":"child_stdout","payload":"检测到活动：普通签到\n"}
+{"time":"2026-09-12T03:39:58.744Z","type":"child_stdout","payload":"检测到活动：普通签到\n"}
+{"time":"2026-09-12T03:40:30.125Z","type":"child_stdout","payload":"检测到活动：普通签到\n"}
+{"time":"2026-09-12T03:41:01.283Z","type":"child_stdout","payload":"检测到活动：普通签到\n"}
+{"time":"2026-09-12T03:41:08.958Z","type":"poll_shutdown","payload":{"reason":"SIGINT"}}
+{"time":"2026-09-12T03:41:08.982Z","type":"child_process_exit","payload":{"code":null,"signal":"SIGTERM","pid":75560}}

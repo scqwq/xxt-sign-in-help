@@ -1,5 +1,5 @@
 import { Decoder } from '@nuintun/qrcode';
-import { general_api, location_api, ocr_api, photo_api, qrcode_api, upload_api, uvtoken_api } from '../../config/api';
+import { courses_api, general_api, location_api, manual_sign_api, ocr_api, photo_api, qrcode_api, upload_api, upload_pan_api, uvtoken_api } from '../../config/api';
 import { fetch as Fetch } from '../../utils/request';
 
 export const generalSign = async (userParams: UserParamsType, activeId: number | undefined) => {
@@ -160,4 +160,39 @@ export const showResultWithTransition = (cb_setStatus: (res: string) => void, va
     neum_form.classList.add('form-height');
     cb_setStatus(value);
   }, 600);
+};
+
+// ===================== 课程管理 =====================
+
+export const getCourses = async (phone: string) => {
+  return await Fetch(`${courses_api}/${phone}`, { type: 'json' });
+};
+
+export const saveCourse = async (phone: string, course: { courseId: string; courseName?: string; autoSign?: boolean; photoPath?: string }) => {
+  return await Fetch(`${courses_api}/${phone}`, { method: 'POST', body: course, type: 'json' });
+};
+
+export const deleteCourse = async (phone: string, courseId: string) => {
+  return await Fetch(`${courses_api}/${phone}/${courseId}`, { method: 'DELETE', type: 'json' });
+};
+
+// ===================== 手动签到（统一入口） =====================
+
+export const manualSign = async (phone: string, body: any) => {
+  return await Fetch(`${manual_sign_api}/${phone}`, { method: 'POST', body, type: 'json' });
+};
+
+export const manualPhotoSign = async (phone: string, fields: any, photoFile: File) => {
+  const data = new FormData();
+  for (const [k, v] of Object.entries(fields)) data.append(k, String(v));
+  data.append('file', photoFile);
+  return await Fetch(`${manual_sign_api}/${phone}`, { method: 'POST', body: data, type: 'json' });
+};
+
+// ===================== 云盘上传 =====================
+
+export const uploadToPan = async (phone: string, photoFile: File) => {
+  const data = new FormData();
+  data.append('file', photoFile);
+  return await Fetch(`${upload_pan_api}/${phone}`, { method: 'POST', body: data, type: 'json' });
 };
