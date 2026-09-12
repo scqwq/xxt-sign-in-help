@@ -48,3 +48,19 @@ export function gcj02ToWgs84(lng: number, lat: number): [number, number] {
   const [glng, glat] = wgs84ToGcj02(lng, lat);
   return [lng * 2 - glng, lat * 2 - glat];
 }
+
+const X_PI = PI * 3000.0 / 180.0;
+
+/** BD-09 → GCJ-02 */
+export function bd09ToGcj02(bdLng: number, bdLat: number): [number, number] {
+  const x = bdLng - 0.0065 * bdLng - 0.006 * bdLat - 0.0001 * bdLng * bdLng + 0.00005 * bdLng * bdLat;
+  const y = bdLat - 0.0056 * bdLat - 0.0008 * bdLng - 0.0001 * bdLat * bdLat + 0.00005 * bdLng * bdLat;
+  return [x, y];
+}
+
+/** GCJ-02 → BD-09 */
+export function gcj02ToBd09(gcjLng: number, gcjLat: number): [number, number] {
+  const z = Math.sqrt(gcjLng * gcjLng + gcjLat * gcjLat) + 0.00002 * Math.sin(gcjLat * X_PI);
+  const theta = Math.atan2(gcjLat, gcjLng) + 0.000003 * Math.cos(gcjLng * X_PI);
+  return [z * Math.cos(theta) + 0.0065, z * Math.sin(theta) + 0.006];
+}

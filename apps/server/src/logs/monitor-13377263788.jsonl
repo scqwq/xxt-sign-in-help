@@ -273,3 +273,31 @@
 {"time":"2026-09-12T05:43:59.552Z","type":"manual_sign_result","payload":{"activeId":8000175122897,"result":"[位置]签到成功","success":true}}
 {"time":"2026-09-12T05:44:27.356Z","type":"child_stdout","payload":"检测到活动：位置签到\n"}
 {"time":"2026-09-12T05:44:58.131Z","type":"poll_shutdown","payload":{"reason":"signal"}}
+{"time":"2026-09-12T06:05:29.277Z","type":"start_request","payload":{"contentType":"application/json","rawBodyType":"string","parsedBodyType":"object","bodyKeys":["payload"]}}
+{"time":"2026-09-12T06:05:29.281Z","type":"fork_prepare","payload":{"script":"D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\poll.ts","exists":true,"isTypeScript":true,"payloadLength":1448,"execPath":"D:\\moresoftware\\nodejs\\node.exe"}}
+{"time":"2026-09-12T06:05:29.333Z","type":"child_process_forked","payload":{"pid":93440}}
+{"time":"2026-09-12T06:05:31.055Z","type":"child_stderr","payload":"ϵͳ�Ҳ���ָ����·����\r\n"}
+{"time":"2026-09-12T06:05:31.062Z","type":"child_stdout","payload":"\u001b[0m\u001b[?25h\u001b[?1l\u001b[2J\u001b[H"}
+{"time":"2026-09-12T06:05:31.065Z","type":"poll_startup","payload":{"mode":"web","pollInterval":30}}
+{"time":"2026-09-12T06:05:31.375Z","type":"poll_ready","payload":{"realname":"零梁志"}}
+{"time":"2026-09-12T06:05:31.379Z","type":"child_stdout","payload":"[轮询监听中] 每 30 秒检查一次课程签到活动...\n"}
+{"time":"2026-09-12T06:05:31.879Z","type":"child_stdout","payload":"检测到活动：位置签到\n"}
+{"time":"2026-09-12T06:05:31.951Z","type":"poll_activity_detected","payload":{"activeId":8000175122897,"name":"位置签到","courseId":"266906839","courseName":"266906839","signType":"位置签到","shouldAutoSign":false}}
+{"time":"2026-09-12T06:05:31.953Z","type":"child_stdout","payload":"[检测到签到] 266906839 - 位置签到 (手动)\n"}
+{"time":"2026-09-12T06:06:03.471Z","type":"child_stdout","payload":"检测到活动：位置签到\n"}
+{"time":"2026-09-12T06:06:34.945Z","type":"child_stdout","payload":"检测到活动：位置签到\n"}
+{"time":"2026-09-12T06:06:35.047Z","type":"poll_activity_detected","payload":{"activeId":8000175124665,"name":"位置签到","courseId":"266906839","courseName":"266906839","signType":"位置签到","shouldAutoSign":false}}
+{"time":"2026-09-12T06:06:35.049Z","type":"child_stdout","payload":"[检测到签到] 266906839 - 位置签到 (手动)\n"}
+{"time":"2026-09-12T06:07:06.378Z","type":"child_stdout","payload":"检测到活动：位置签到\n"}
+{"time":"2026-09-12T06:07:19.636Z","type":"manual_sign_request","payload":{"activeId":8000175124665,"otherId":4,"courseId":"266906839","hasPhoto":false}}
+{"time":"2026-09-12T06:07:19.958Z","type":"manual_sign_result","payload":{"activeId":8000175124665,"result":"[位置]距教师指定签到地点889.0米，不在可签到范围内。","success":false}}
+{"time":"2026-09-12T06:07:28.903Z","type":"manual_sign_request","payload":{"activeId":8000175124665,"otherId":4,"courseId":"266906839","hasPhoto":false}}
+{"time":"2026-09-12T06:07:29.127Z","type":"manual_sign_result","payload":{"activeId":8000175124665,"result":"[位置]距教师指定签到地点889.0米，不在可签到范围内。","success":false}}
+{"time":"2026-09-12T06:07:32.311Z","type":"manual_sign_request","payload":{"activeId":8000175124665,"otherId":4,"courseId":"266906839","hasPhoto":false}}
+{"time":"2026-09-12T06:07:32.394Z","type":"manual_sign_result","payload":{"activeId":8000175124665,"result":"[位置]距教师指定签到地点889.0米，不在可签到范围内。","success":false}}
+{"time":"2026-09-12T06:07:35.239Z","type":"manual_sign_request","payload":{"activeId":8000175124665,"otherId":4,"courseId":"266906839","hasPhoto":false}}
+{"time":"2026-09-12T06:07:35.324Z","type":"manual_sign_result","payload":{"activeId":8000175124665,"result":"[位置]距教师指定签到地点889.0米，不在可签到范围内。","success":false}}
+{"time":"2026-09-12T06:07:37.650Z","type":"child_stdout","payload":"检测到活动：位置签到\n"}
+{"time":"2026-09-12T06:07:57.251Z","type":"manual_sign_request","payload":{"activeId":8000175124665,"otherId":4,"courseId":"266906839","hasPhoto":false}}
+{"time":"2026-09-12T06:07:57.491Z","type":"manual_sign_result","payload":{"activeId":8000175124665,"result":"[位置]签到成功","success":true}}
+{"time":"2026-09-12T06:08:09.148Z","type":"poll_shutdown","payload":{"reason":"signal"}}

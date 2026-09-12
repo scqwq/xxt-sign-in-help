@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState, CSSProperties } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { gcj02ToWgs84 } from '../../utils/gcoord';
+import { gcj02ToWgs84, wgs84ToGcj02, gcj02ToBd09 } from '../../utils/gcoord';
 
 interface MapSettings {
   amapKey: string;
   defaultCity: string;
   defaultLat: number;
   defaultLon: number;
-  coordConvert: boolean;
+  coordMode: string;
+  successAutoHide: number;
 }
 
 const DEFAULT_MAP_SETTINGS: MapSettings = {
@@ -16,7 +17,8 @@ const DEFAULT_MAP_SETTINGS: MapSettings = {
   defaultCity: '北京',
   defaultLat: 39.9042,
   defaultLon: 116.4074,
-  coordConvert: true,
+  coordMode: 'none',
+  successAutoHide: 30,
 };
 
 function loadMapSettings(): MapSettings {
@@ -51,6 +53,13 @@ const inputStyle: CSSProperties = {
   boxSizing: 'border-box',
 };
 
+const coordModeLabel: Record<string, string> = {
+  none: '不转换（发送原始坐标）',
+  wgs84: '已转换为 WGS-84 (GPS坐标)',
+  gcj02: '已转换为 GCJ-02 (高德坐标)',
+  bd09: '已转换为 BD-09 (百度坐标)',
+};
+
 export default function MapPicker({ onClose, onConfirm }: MapPickerProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<L.Map | null>(null);
@@ -67,29 +76,32 @@ export default function MapPicker({ onClose, onConfirm }: MapPickerProps) {
   const [showResults, setShowResults] = useState(false);
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // 设置标记并转换坐标（高德GCJ-02 → WGS-84 GPS坐标）
-  const setMarkerAndCoords = (gcjLat: number, gcjLng: number) => {
+  // 设置标记并按选定模式转换坐标
+  const setMarkerAndCoords = (rawLat: number, rawLng: number) => {
     if (!mapInstance.current) return;
-    const latlng: L.LatLngExpression = [gcjLat, gcjLng];
+    const latlng: L.LatLngExpression = [rawLat, rawLng];
     if (markerRef.current) {
       markerRef.current.setLatLng(latlng);
     } else {
       markerRef.current = L.marker(latlng).addTo(mapInstance.current);
     }
-    if (settings.current.coordConvert) {
-      const [wgsLng, wgsLat] = gcj02ToWgs84(gcjLng, gcjLat);
-      setLat(wgsLat.toFixed(6));
-      setLon(wgsLng.toFixed(6));
-    } else {
-      setLat(gcjLat.toFixed(6));
-      setLon(gcjLng.toFixed(6));
+    let finalLng = rawLng;
+    let finalLat = rawLat;
+    const mode = settings.current.coordMode;
+    if (mode === 'wgs84') {
+      [finalLng, finalLat] = gcj02ToWgs84(rawLng, rawLat);
+    } else if (mode === 'gcj02') {
+      [finalLng, finalLat] = wgs84ToGcj02(rawLng, rawLat);
+    } else if (mode === 'bd09') {
+      [finalLng, finalLat] = gcj02ToBd09(rawLng, rawLat);
     }
+    setLat(finalLat.toFixed(6));
+    setLon(finalLng.toFixed(6));
   };
 
   useEffect(() => {
     if (!mapRef.current) return;
 
-    // 高德地图瓦片（国内访问快，无需 API key）
     const amapLayer = L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&style=8&x={x}&y={y}&z={z}', {
       subdomains: ['1', '2', '3', '4'],
       maxZoom: 18,
@@ -103,7 +115,6 @@ export default function MapPicker({ onClose, onConfirm }: MapPickerProps) {
     });
     mapInstance.current = map;
 
-    // 修复默认图标路径
     const defaultIcon = L.icon({
       iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
       iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -113,7 +124,6 @@ export default function MapPicker({ onClose, onConfirm }: MapPickerProps) {
     });
     L.Marker.prototype.options.icon = defaultIcon;
 
-    // 点击地图设置标记
     map.on('click', (e: L.LeafletMouseEvent) => {
       setMarkerAndCoords(e.latlng.lat, e.latlng.lng);
     });
@@ -124,7 +134,6 @@ export default function MapPicker({ onClose, onConfirm }: MapPickerProps) {
     };
   }, []);
 
-  // 搜索输入（防抖 300ms）
   const handleSearchInput = (text: string) => {
     setSearchText(text);
     if (searchTimer.current) clearTimeout(searchTimer.current);
@@ -153,7 +162,6 @@ export default function MapPicker({ onClose, onConfirm }: MapPickerProps) {
     }, 300);
   };
 
-  // 选择搜索结果
   const handleSelectTip = (tip: SearchTip) => {
     const parts = tip.location.split(',');
     const lng = Number(parts[0]);
@@ -187,7 +195,6 @@ export default function MapPicker({ onClose, onConfirm }: MapPickerProps) {
       }}>
         <h3 style={{ margin: '0 0 12px', color: '#334155' }}>选择签到位置</h3>
         <p style={{ color: '#8290a3', fontSize: '0.85rem', margin: '0 0 8px' }}>点击地图或搜索地址选择坐标</p>
-        {/* 搜索栏 */}
         <div style={{ position: 'relative', marginBottom: 12 }}>
           <input
             style={inputStyle}
@@ -219,13 +226,13 @@ export default function MapPicker({ onClose, onConfirm }: MapPickerProps) {
         <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
           <input
             style={{ ...inputStyle, flex: 1 }}
-            placeholder='纬度（GPS坐标，自动填入）'
+            placeholder='纬度（自动填入）'
             value={lat}
             readOnly
           />
           <input
             style={{ ...inputStyle, flex: 1 }}
-            placeholder='经度（GPS坐标，自动填入）'
+            placeholder='经度（自动填入）'
             value={lon}
             readOnly
           />
@@ -236,8 +243,7 @@ export default function MapPicker({ onClose, onConfirm }: MapPickerProps) {
           value={address}
           onChange={(e) => setAddress(e.target.value)}
         />
-        {settings.current.coordConvert && <p style={{ fontSize: '0.75rem', color: '#94a3b8', margin: '0 0 12px' }}>已自动将高德坐标转换为GPS坐标(WGS-84)，签到偏差可降至最低</p>}
-        {!settings.current.coordConvert && <div style={{ marginBottom: 12 }} />}
+        <p style={{ fontSize: '0.75rem', color: '#94a3b8', margin: '0 0 12px' }}>{coordModeLabel[settings.current.coordMode] || ''}</p>
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
           <button
             onClick={onClose}
@@ -256,4 +262,3 @@ export default function MapPicker({ onClose, onConfirm }: MapPickerProps) {
     </div>
   );
 }
-

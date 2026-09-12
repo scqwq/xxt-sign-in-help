@@ -12,10 +12,9 @@ interface RightPanelProps {
   phone: string;
   monitorEvents: any[];
   onAlert: (msg: string, severity: AlertColor) => void;
-  onCourseRecorded: () => void; // 记录课程后刷新左侧
+  onCourseRecorded: () => void;
 }
 
-// 签到类型中文映射
 const signTypeText = (otherId: number, ifphoto?: number): string => {
   if (ifphoto === 1 || otherId === 0 && ifphoto === 1) return '拍照签到';
   switch (otherId) {
@@ -28,18 +27,37 @@ const signTypeText = (otherId: number, ifphoto?: number): string => {
   }
 };
 
+function loadSuccessAutoHide(): number {
+  try {
+    const raw = localStorage.getItem('map_settings');
+    if (raw) return JSON.parse(raw).successAutoHide ?? 30;
+  } catch { /* ignore */ }
+  return 30;
+}
+
 export default function RightPanel({ phone, monitorEvents, onAlert, onCourseRecorded }: RightPanelProps) {
   const [busy, setBusy] = useState<{ [activeId: string]: boolean }>({});
-  // 手动签到展开状态：activeId -> 是否展开表单
   const [expanded, setExpanded] = useState<{ [activeId: string]: boolean }>({});
-  // 位置签到临时输入
   const [locationInput, setLocationInput] = useState<{ [activeId: string]: { latlon: string; address: string } }>({});
-  // 签到码输入
   const [signCodeInput, setSignCodeInput] = useState<{ [activeId: string]: string }>({});
-  // 地图选择器：当前选中的 activeId (null=不显示)
   const [mapPickerFor, setMapPickerFor] = useState<string | null>(null);
+  // 手动签到结果（覆盖后端事件状态）
+  const [manualResults, setManualResults] = useState<{ [key: string]: { success: boolean; resultText: string } }>({});
+  // 自动隐藏的 activeId 集合
+  const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
 
-  // 按活动分组事件：一个 activeId 可能有多条事件（detected/processing/result）
+  const setManualResult = (activeId: string, success: boolean, resultText: string) => {
+    setManualResults(prev => ({ ...prev, [activeId]: { success, resultText } }));
+    if (success) {
+      const autoHide = loadSuccessAutoHide();
+      if (autoHide > 0) {
+        setTimeout(() => {
+          setHiddenIds(prev => new Set([...prev, activeId]));
+        }, autoHide * 1000);
+      }
+    }
+  };
+
   const groupedEvents = () => {
     const map = new Map<string, any>();
     for (const ev of monitorEvents) {
@@ -52,7 +70,6 @@ export default function RightPanel({ phone, monitorEvents, onAlert, onCourseReco
       if (ev.type === 'detected') entry.detected = ev;
       else if (ev.type === 'processing') entry.processing = ev;
       else if (ev.type === 'result') entry.result = ev;
-      // 保留最新的事件时间
       if (ev.time > entry.raw.time) entry.raw = ev;
     }
     return Array.from(map.values()).sort((a, b) => b.raw.time - a.raw.time);
@@ -66,24 +83,20 @@ export default function RightPanel({ phone, monitorEvents, onAlert, onCourseReco
     try {
       let res: any;
       if (ifphoto === 1) {
-        // 拍照签到需要选图片，展开表单
         setExpanded(prev => ({ ...prev, [activeId]: true }));
         setBusy(prev => ({ ...prev, [activeId]: false }));
         return;
       }
       if (otherId === 4) {
-        // 位置签到
         setExpanded(prev => ({ ...prev, [activeId]: true }));
         setBusy(prev => ({ ...prev, [activeId]: false }));
         return;
       }
       if (otherId === 5) {
-        // 签到码
         setExpanded(prev => ({ ...prev, [activeId]: true }));
         setBusy(prev => ({ ...prev, [activeId]: false }));
         return;
       }
-      // 普通/手势/二维码 直接签
       res = await manualSign(phone, {
         activeId: Number(activeId),
         otherId,
@@ -91,9 +104,12 @@ export default function RightPanel({ phone, monitorEvents, onAlert, onCourseReco
         classId: ev.classId,
         signType: signTypeText(otherId, ifphoto)
       });
-      onAlert(res?.msg || (res?.success ? '签到成功' : '签到失败'), res?.success ? 'success' : 'error');
+      const msg = res?.msg || (res?.success ? '签到成功' : '签到失败');
+      onAlert(msg, res?.success ? 'success' : 'error');
+      setManualResult(String(activeId), res?.success, msg);
     } catch (err: any) {
       onAlert(err?.message || '签到请求失败', 'error');
+      setManualResult(String(activeId), false, err?.message || '签到请求失败');
     } finally {
       setBusy(prev => ({ ...prev, [activeId]: false }));
     }
@@ -110,10 +126,13 @@ export default function RightPanel({ phone, monitorEvents, onAlert, onCourseReco
         classId: ev.classId,
         signType: '拍照签到'
       }, file);
-      onAlert(res?.msg || (res?.success ? '拍照签到成功' : '拍照签到失败'), res?.success ? 'success' : 'error');
+      const msg = res?.msg || (res?.success ? '拍照签到成功' : '拍照签到失败');
+      onAlert(msg, res?.success ? 'success' : 'error');
+      setManualResult(String(activeId), res?.success, msg);
       if (res?.success) setExpanded(prev => ({ ...prev, [activeId]: false }));
     } catch (err: any) {
       onAlert(err?.message || '拍照签到请求失败', 'error');
+      setManualResult(String(activeId), false, err?.message || '拍照签到请求失败');
     } finally {
       setBusy(prev => ({ ...prev, [activeId]: false }));
     }
@@ -139,10 +158,13 @@ export default function RightPanel({ phone, monitorEvents, onAlert, onCourseReco
         lon: lon?.trim(),
         address: input.address
       });
-      onAlert(res?.msg || (res?.success ? '位置签到成功' : '位置签到失败'), res?.success ? 'success' : 'error');
+      const msg = res?.msg || (res?.success ? '位置签到成功' : '位置签到失败');
+      onAlert(msg, res?.success ? 'success' : 'error');
+      setManualResult(String(activeId), res?.success, msg);
       if (res?.success) setExpanded(prev => ({ ...prev, [activeId]: false }));
     } catch (err: any) {
       onAlert(err?.message || '位置签到请求失败', 'error');
+      setManualResult(String(activeId), false, err?.message || '位置签到请求失败');
     } finally {
       setBusy(prev => ({ ...prev, [activeId]: false }));
     }
@@ -165,10 +187,13 @@ export default function RightPanel({ phone, monitorEvents, onAlert, onCourseReco
         signType: '签到码签到',
         signCode: code
       });
-      onAlert(res?.msg || (res?.success ? '签到成功' : '签到失败'), res?.success ? 'success' : 'error');
+      const msg = res?.msg || (res?.success ? '签到成功' : '签到失败');
+      onAlert(msg, res?.success ? 'success' : 'error');
+      setManualResult(String(activeId), res?.success, msg);
       if (res?.success) setExpanded(prev => ({ ...prev, [activeId]: false }));
     } catch (err: any) {
       onAlert(err?.message || '签到请求失败', 'error');
+      setManualResult(String(activeId), false, err?.message || '签到请求失败');
     } finally {
       setBusy(prev => ({ ...prev, [activeId]: false }));
     }
@@ -182,26 +207,23 @@ export default function RightPanel({ phone, monitorEvents, onAlert, onCourseReco
         autoSign: false,
         photoPath: ''
       });
-      onAlert(`已记录课程：${ev.courseName || ev.courseId}`, 'success');
+      onAlert('已记录课程：' + (ev.courseName || ev.courseId), 'success');
       onCourseRecorded();
     } catch (err: any) {
       onAlert(err?.message || '记录课程失败', 'error');
     }
   };
 
-  // 使用云盘图片签到
   const handlePanPhotoSign = async (ev: any) => {
     const activeId = ev.activeId;
     setBusy(prev => ({ ...prev, [activeId]: true }));
     try {
-      // 先查云盘图片
       const panRes = await getPanPhoto(phone);
       if (!panRes?.success || !panRes?.objectId) {
         onAlert(panRes?.msg || '云盘中未找到 0.jpg/0.png，请先在左侧上传图片到云盘', 'warning');
         setBusy(prev => ({ ...prev, [activeId]: false }));
         return;
       }
-      // 用 objectId 签到
       const res = await signWithPanPhoto(phone, {
         activeId: Number(activeId),
         otherId: 0,
@@ -210,10 +232,13 @@ export default function RightPanel({ phone, monitorEvents, onAlert, onCourseReco
         signType: '拍照签到',
         objectId: panRes.objectId
       });
-      onAlert(res?.msg || (res?.success ? '云盘图片签到成功' : '云盘图片签到失败'), res?.success ? 'success' : 'error');
+      const msg = res?.msg || (res?.success ? '云盘图片签到成功' : '云盘图片签到失败');
+      onAlert(msg, res?.success ? 'success' : 'error');
+      setManualResult(String(activeId), res?.success, msg);
       if (res?.success) setExpanded(prev => ({ ...prev, [activeId]: false }));
     } catch (err: any) {
       onAlert(err?.message || '云盘图片签到失败', 'error');
+      setManualResult(String(activeId), false, err?.message || '云盘图片签到失败');
     } finally {
       setBusy(prev => ({ ...prev, [activeId]: false }));
     }
@@ -231,9 +256,11 @@ export default function RightPanel({ phone, monitorEvents, onAlert, onCourseReco
           {events.map((entry) => {
             const ev = entry.detected || entry.raw;
             const activeId = String(ev.activeId);
-            const hasResult = !!entry.result;
-            const resultText = entry.result?.result || '';
-            const isSuccess = resultText.includes('成功');
+            if (hiddenIds.has(activeId)) return null;
+            const manualResult = manualResults[activeId];
+            const hasResult = !!entry.result || !!manualResult;
+            const resultText = manualResult?.resultText || entry.result?.result || '';
+            const isSuccess = manualResult ? manualResult.success : resultText.includes('成功');
             const isAutoSigned = ev.autoSign === true;
             const isBusy = busy[activeId];
             const isExpanded = expanded[activeId];
@@ -250,7 +277,6 @@ export default function RightPanel({ phone, monitorEvents, onAlert, onCourseReco
                       {resultText}
                     </span>
                   )}
-                  {/* 手动操作按钮：未自动签且无结果时显示 */}
                   {!isAutoSigned && !hasResult && (
                     <div className='sign-event-actions'>
                       <Button
@@ -272,7 +298,6 @@ export default function RightPanel({ phone, monitorEvents, onAlert, onCourseReco
                       </Button>
                     </div>
                   )}
-                  {/* 签到失败后显示"再次签到"按钮 */}
                   {hasResult && !isSuccess && (
                     <div className='sign-event-actions'>
                       <Button
@@ -286,13 +311,12 @@ export default function RightPanel({ phone, monitorEvents, onAlert, onCourseReco
                       </Button>
                     </div>
                   )}
-                  {/* 展开的拍照签到表单 */}
                   {isExpanded && ev.ifphoto === 1 && (
                     <div className='manual-sign-form'>
                       <input
                         type='file'
                         accept='image/*'
-                        id={`photo-input-${activeId}`}
+                        id={'photo-input-' + activeId}
                         style={{ display: 'none' }}
                         onChange={(e) => {
                           const file = e.target.files?.[0];
@@ -304,7 +328,7 @@ export default function RightPanel({ phone, monitorEvents, onAlert, onCourseReco
                         variant='outlined'
                         fullWidth
                         disabled={isBusy}
-                        onClick={() => document.getElementById(`photo-input-${activeId}`)?.click()}
+                        onClick={() => document.getElementById('photo-input-' + activeId)?.click()}
                         style={{ borderRadius: 8, marginBottom: 6 }}
                       >
                         {isBusy ? <CircularProgress size={14} /> : '选择本地图片签到'}
@@ -321,7 +345,6 @@ export default function RightPanel({ phone, monitorEvents, onAlert, onCourseReco
                       </Button>
                     </div>
                   )}
-                  {/* 展开的位置签到表单 */}
                   {isExpanded && ev.otherId === 4 && (
                     <div className='manual-sign-form'>
                       <Button
@@ -350,7 +373,6 @@ export default function RightPanel({ phone, monitorEvents, onAlert, onCourseReco
                       </Button>
                     </div>
                   )}
-                  {/* 展开的签到码表单 */}
                   {isExpanded && ev.otherId === 5 && (
                     <div className='manual-sign-form'>
                       <input
@@ -367,7 +389,7 @@ export default function RightPanel({ phone, monitorEvents, onAlert, onCourseReco
                 </div>
                 <div className='sign-event-right'>
                   {hasResult ? (
-                    <span className={`result-text ${isSuccess ? '' : 'error'}`}>{isSuccess ? '✅' : '❌'}</span>
+                    <span className={'result-text ' + (isSuccess ? '' : 'error')}>{isSuccess ? '✅' : '❌'}</span>
                   ) : isAutoSigned ? (
                     <span className='result-text'>自动</span>
                   ) : (
@@ -380,14 +402,13 @@ export default function RightPanel({ phone, monitorEvents, onAlert, onCourseReco
           })}
         </div>
       </div>
-      {/* 地图选择器弹窗 */}
       {mapPickerFor && (
         <MapPicker
           onClose={() => setMapPickerFor(null)}
           onConfirm={(lat, lon, address) => {
             setLocationInput(prev => ({
               ...prev,
-              [mapPickerFor]: { latlon: `${lat},${lon}`, address }
+              [mapPickerFor]: { latlon: lat + ',' + lon, address }
             }));
             setMapPickerFor(null);
           }}

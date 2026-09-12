@@ -1,4 +1,4 @@
-import { Button, CircularProgress, Chip, Switch, TextField, MenuItem, FormControlLabel } from '@mui/material';
+import { Button, CircularProgress, Chip, Switch, TextField, MenuItem } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { deleteCourse, getCourses, saveCourse, uploadToPan } from './Helper';
 
@@ -7,7 +7,8 @@ interface MapSettings {
   defaultCity: string;
   defaultLat: number;
   defaultLon: number;
-  coordConvert: boolean;
+  coordMode: string;
+  successAutoHide: number;
 }
 
 const DEFAULT_MAP_SETTINGS: MapSettings = {
@@ -15,7 +16,8 @@ const DEFAULT_MAP_SETTINGS: MapSettings = {
   defaultCity: '北京',
   defaultLat: 39.9042,
   defaultLon: 116.4074,
-  coordConvert: true,
+  coordMode: 'none',
+  successAutoHide: 30,
 };
 
 const PRESET_CITIES = [
@@ -120,7 +122,6 @@ export default function LeftPanel({ phone, monitorOnline, monitorLoading, onTogg
 
   return (
     <div className='dashboard-left'>
-      {/* 监听控制 */}
       <div className='panel'>
         <h3>监听控制</h3>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -138,7 +139,6 @@ export default function LeftPanel({ phone, monitorOnline, monitorLoading, onTogg
         </div>
       </div>
 
-      {/* 手动刷新 */}
       <div className='panel'>
         <h3>手动操作</h3>
         <Button variant='outlined' fullWidth onClick={onManualRefresh} style={{ borderRadius: 10 }}>
@@ -166,7 +166,7 @@ export default function LeftPanel({ phone, monitorOnline, monitorLoading, onTogg
             try {
               const res = await uploadToPan(phone, file);
               if (res?.success) {
-                alert(`上传成功！objectId: ${res.objectId}`);
+                alert('上传成功！objectId: ' + res.objectId);
               } else {
                 alert(res?.msg || '上传失败');
               }
@@ -180,7 +180,6 @@ export default function LeftPanel({ phone, monitorOnline, monitorLoading, onTogg
         <p className='muted' style={{ marginTop: 8 }}>上传后获得 objectId，可用于拍照签到</p>
       </div>
 
-      {/* 已记录课程 */}
       <div className='panel'>
         <h3>已记录课程</h3>
         {loading && <div className='muted'>加载中...</div>}
@@ -210,10 +209,9 @@ export default function LeftPanel({ phone, monitorOnline, monitorLoading, onTogg
         ))}
       </div>
 
-      {/* 地图设置 */}
       <div className='panel'>
         <h3>地图设置</h3>
-        <p className='muted' style={{ marginBottom: 12 }}>配置位置签到地图的默认城市和搜索功能</p>
+        <p className='muted' style={{ marginBottom: 12 }}>配置位置签到地图和签到显示</p>
         <TextField
           select
           label='默认城市'
@@ -240,15 +238,30 @@ export default function LeftPanel({ phone, monitorOnline, monitorLoading, onTogg
           helperText='在高德开放平台 lbs.amap.com 免费申请「Web服务」Key'
           style={{ marginBottom: 12 }}
         />
-        <FormControlLabel
-          label='启用坐标转换 (GCJ-02→WGS-84)'
-          control={
-            <Switch
-              size='small'
-              checked={mapSettings.coordConvert}
-              onChange={(e) => updateMapSettings({ coordConvert: e.target.checked })}
-            />
-          }
+        <TextField
+          select
+          label='坐标转换'
+          value={mapSettings.coordMode}
+          onChange={(e) => updateMapSettings({ coordMode: e.target.value })}
+          fullWidth
+          variant='outlined'
+          size='small'
+          helperText='签到位置偏差大时尝试不同选项'
+          style={{ marginBottom: 12 }}
+        >
+          <MenuItem value='none'>不转换（发送原始坐标）</MenuItem>
+          <MenuItem value='wgs84'>→ WGS-84 (GPS坐标)</MenuItem>
+          <MenuItem value='gcj02'>→ GCJ-02 (高德坐标)</MenuItem>
+          <MenuItem value='bd09'>→ BD-09 (百度坐标)</MenuItem>
+        </TextField>
+        <TextField
+          label='签到成功后自动隐藏（秒，0=不隐藏）'
+          value={mapSettings.successAutoHide}
+          onChange={(e) => updateMapSettings({ successAutoHide: Number(e.target.value) || 0 })}
+          type='number'
+          fullWidth
+          variant='outlined'
+          size='small'
         />
       </div>
     </div>
