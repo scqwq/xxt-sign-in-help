@@ -66,7 +66,11 @@ pnpm install
 ```
 
 ### 3. 配置
+**env.json**现在读取的位置：apps/server/src/env.json（含手机端 UA 等配置，注意填userAgent是最重要的）
 
+.env现在也没有正确读取，当前依然是硬编码，pnpm dev后打开的端口为3000
+
+未进行的(需要修正的希望的)改动：
 **env.json**（项目根目录，含手机端 UA 等配置）：
 
 ```bash
@@ -88,21 +92,13 @@ cp .env.example .env
 
 ```bash
 pnpm build      # 构建前后端
+pnpm dev        #前后端同时启动
 pnpm serve      # 启动后端服务（提供静态页面 + API）
-```
-
-访问 `http://localhost:5000`（端口可在 `.env` 中修改）即可调试后端界面。
-
-
-### 5.前后端同时启动
-
-```bash
-pnpm dev
 ```
 
 前端开发服务器在 `http://localhost:3000`，后端 API 在 `http://localhost:5000`。
 
-### 6. CLI 模式（命令行签到）
+### 5. CLI 模式（命令行签到）
 
 ```bash
 pnpm build
