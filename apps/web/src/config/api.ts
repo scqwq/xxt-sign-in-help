@@ -31,3 +31,5 @@ export const courses_api = baseUrl + '/courses';
 export const manual_sign_api = baseUrl + '/monitor/sign';
 
 export const upload_pan_api = baseUrl + '/upload-pan';
+
+export const pan_photos_api = baseUrl + '/pan-photos';

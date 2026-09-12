@@ -4,17 +4,28 @@
  * PowerShell 会把退格和 Ctrl 组合键显示为 ^H、^C。
  */
 export const restoreTerminal = () => {
-  const input = process.stdin as NodeJS.ReadStream & { setRawMode?: (mode: boolean) => void; };
+  const input = process.stdin as NodeJS.ReadStream & {
+    setRawMode?: (mode: boolean) => void;
+    isRaw?: boolean;
+  };
   try {
-    // 不依赖 isTTY 判断：pnpm/turbo 转发信号时 isTTY 可能已经变成 false，
-    // 但底层控制台仍然可能保持 raw mode。
-    input.setRawMode?.(false);
+    // 先 resume 再关 raw mode，确保 stdin 恢复正常可读状态
+    input.resume();
+    if (input.isRaw) {
+      input.setRawMode?.(false);
+    }
     input.removeAllListeners('keypress');
     input.removeAllListeners('data');
-    input.pause();
+    // 恢复默认编码
+    input.setEncoding?.('utf8');
   } catch { /* 进程退出阶段 stdin 可能已经被关闭 */ }
 
   try {
-    if (process.stdout.isTTY) process.stdout.write('\u001b[0m\u001b[?25h\n');
+    // 重置终端：颜色复位 + 显示光标 + 确保回显
+    process.stdout.write('[0m[?25h');
+    // 在 Windows 上，raw mode 关闭后可能需要显式恢复回显
+    if (process.platform === 'win32') {
+      process.stdout.write('[?1l');
+    }
   } catch { /* 忽略终端输出错误 */ }
 };

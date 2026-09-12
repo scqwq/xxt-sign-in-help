@@ -1,5 +1,5 @@
 import { Decoder } from '@nuintun/qrcode';
-import { courses_api, general_api, location_api, manual_sign_api, ocr_api, photo_api, qrcode_api, upload_api, upload_pan_api, uvtoken_api } from '../../config/api';
+import { courses_api, general_api, location_api, manual_sign_api, ocr_api, pan_photos_api, photo_api, qrcode_api, upload_api, upload_pan_api, uvtoken_api } from '../../config/api';
 import { fetch as Fetch } from '../../utils/request';
 
 export const generalSign = async (userParams: UserParamsType, activeId: number | undefined) => {
@@ -195,4 +195,14 @@ export const uploadToPan = async (phone: string, photoFile: File) => {
   const data = new FormData();
   data.append('file', photoFile);
   return await Fetch(`${upload_pan_api}/${phone}`, { method: 'POST', body: data, type: 'json' });
+};
+
+// 查询云盘中的图片（0.jpg/0.png），返回 objectId
+export const getPanPhoto = async (phone: string) => {
+  return await Fetch(`${pan_photos_api}/${phone}`, { type: 'json' });
+};
+
+// 使用云盘图片 objectId 进行拍照签到
+export const signWithPanPhoto = async (phone: string, fields: any) => {
+  return await Fetch(`${manual_sign_api}/${phone}`, { method: 'POST', body: fields, type: 'json' });
 };

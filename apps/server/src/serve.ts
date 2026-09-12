@@ -9,7 +9,7 @@ import serverless from 'serverless-http';
 import { getPPTActiveInfo, getSignType, preSign, traverseCourseActivity } from './functions/activity';
 import { GeneralSign } from './functions/general';
 import { LocationSign } from './functions/location';
-import { PhotoSign, uploadPhoto } from './functions/photo';
+import { PhotoSign, uploadPhoto, getObjectIdFromcxPan } from './functions/photo';
 import { QRCodeSign } from './functions/qrcode';
 import { QrCodeScan } from './functions/tencent.qrcode';
 import { getAccountInfo, getCourses, getPanToken, userLogin } from './functions/user';
@@ -459,6 +459,25 @@ router.post('/upload-pan/:phone', async (ctx) => {
   }
 });
 
+// ===================== 云盘图片列表 =====================
+
+router.get('/pan-photos/:phone', async (ctx) => {
+  const phone = ctx.params.phone;
+  const user = dbGetUser(phone);
+  if (!user || !user.params || !user.params._uid) { ctx.body = { success: false, msg: '用户凭证不存在，请重新登录' }; return; }
+  const cookies = { ...user.params } as any;
+  try {
+    const objectId = await getObjectIdFromcxPan(cookies);
+    if (objectId) {
+      ctx.body = { success: true, objectId, msg: '找到云盘图片 0.jpg/0.png' };
+    } else {
+      ctx.body = { success: false, msg: '云盘中未找到 0.jpg 或 0.png，请先上传' };
+    }
+  } catch (e: any) {
+    ctx.body = { success: false, msg: `查询云盘失败：${e?.message || e}` };
+  }
+});
+
 // ===================== 手动签到统一入口 =====================
 
 router.post('/monitor/sign/:phone', async (ctx) => {
@@ -517,13 +536,16 @@ router.post('/monitor/sign/:phone', async (ctx) => {
       const { lat, lon, address } = body;
       result = await LocationSign({ name, activeId, lat, lon, address, ...cookies });
     } else if (oid === 0 && photoBuffer) {
-      // 拍照签到（上传文件）
+      // 拍照签到（上传本地文件）
       const tokenRes = await getPanToken(cookies);
       const token = JSON.parse(tokenRes)._token;
       const uploadRes = await uploadPhoto({ ...cookies, buffer: photoBuffer, token });
       const objectId = JSON.parse(uploadRes).objectId;
       if (!objectId) { result = '[拍照]上传失败，未获取到 objectId'; }
       else { result = await PhotoSign({ name, activeId, objectId, ...cookies }); }
+    } else if (oid === 0 && body.objectId) {
+      // 拍照签到（使用云盘已有图片的 objectId）
+      result = await PhotoSign({ name, activeId, objectId: body.objectId, ...cookies });
     } else {
       // 普通 / 手势 / 签到码
       result = await GeneralSign({ name, activeId, ...cookies });
@@ -561,7 +583,7 @@ const shutdownServer = () => {
   processMap.forEach((pcs) => {
     if (!pcs.killed) pcs.kill('SIGTERM');
   });
-  setTimeout(() => process.exit(0), 300).unref();
+  setTimeout(() => process.exit(0), 300);
 };
 
 process.once('SIGINT', shutdownServer);

@@ -4,17 +4,28 @@ import { tmpdir } from 'os';
 import path from 'path';
 import { CHAT_GROUP, PANCHAOXING, PANLIST, PANUPLOAD, PPTSIGN } from '../configs/api';
 import { cookieSerialize, request } from '../utils/request';
+import { getJsonObject } from '../utils/file';
+
+/** 读取 env.json 的手机端 UA，用于拍照签到请求。 */
+const getMobileUA = (): string => {
+  try {
+    const cfg = getJsonObject('env.json');
+    return cfg?.webim?.userAgent || '';
+  } catch { return ''; }
+};
 
 export const PhotoSign = async (
   args: BasicCookie & { fid: string; objectId: string; name: string; activeId: string }
 ): Promise<string> => {
   const { name, activeId, fid, objectId, ...cookies } = args;
+  const ua = getMobileUA();
   const url = `${PPTSIGN.URL}?activeId=${activeId}&uid=${
     cookies._uid
-  }&clientip=&useragent=&latitude=-1&longitude=-1&appType=15&fid=${fid}&objectId=${objectId}&name=${encodeURIComponent(name)}`;
+  }&clientip=&useragent=${encodeURIComponent(ua)}&latitude=-1&longitude=-1&appType=15&fid=${fid}&objectId=${objectId}&name=${encodeURIComponent(name)}`;
   const result = await request(url, {
     headers: {
       Cookie: cookieSerialize(cookies),
+      ...(ua ? { 'User-Agent': ua } : {}),
     },
   });
   const msg = result.data === 'success' ? '[拍照]签到成功' : `[拍照]${result.data}`;
@@ -74,6 +85,7 @@ export const getObjectIdFromcxPan = async (cookies: BasicCookie) => {
 // 直接上传图片获得 objectId，在UI项目里使用
 export const uploadPhoto = async (args: BasicCookie & { buffer: Buffer; token: string }) => {
   const { token, buffer, ...cookies } = args;
+  const ua = getMobileUA();
   const FormData = (await import('form-data')).default;
   const form = new FormData();
   const tempFilePath = path.join(tmpdir(), randomBytes(16).toString('hex') + '.jpg');
@@ -91,6 +103,7 @@ export const uploadPhoto = async (args: BasicCookie & { buffer: Buffer; token: s
       headers: {
         Cookie: cookieSerialize(cookies),
         'Content-Type': `multipart/form-data;boundary=${form.getBoundary()}`,
+        ...(ua ? { 'User-Agent': ua } : {}),
       },
     },
     form.getBuffer()

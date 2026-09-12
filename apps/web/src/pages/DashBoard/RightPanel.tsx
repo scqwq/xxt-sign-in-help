@@ -5,7 +5,7 @@ import ButtonBase from '@mui/material/ButtonBase';
 import CircularProgress from '@mui/material/CircularProgress';
 import Snackbar from '@mui/material/Snackbar';
 import { useEffect, useState } from 'react';
-import { manualPhotoSign, manualSign, saveCourse } from './Helper';
+import { getPanPhoto, manualPhotoSign, manualSign, saveCourse, signWithPanPhoto } from './Helper';
 
 interface RightPanelProps {
   phone: string;
@@ -186,6 +186,36 @@ export default function RightPanel({ phone, monitorEvents, onAlert, onCourseReco
     }
   };
 
+  // 使用云盘图片签到
+  const handlePanPhotoSign = async (ev: any) => {
+    const activeId = ev.activeId;
+    setBusy(prev => ({ ...prev, [activeId]: true }));
+    try {
+      // 先查云盘图片
+      const panRes = await getPanPhoto(phone);
+      if (!panRes?.success || !panRes?.objectId) {
+        onAlert(panRes?.msg || '云盘中未找到 0.jpg/0.png，请先在左侧上传图片到云盘', 'warning');
+        setBusy(prev => ({ ...prev, [activeId]: false }));
+        return;
+      }
+      // 用 objectId 签到
+      const res = await signWithPanPhoto(phone, {
+        activeId: Number(activeId),
+        otherId: 0,
+        courseId: ev.courseId,
+        classId: ev.classId,
+        signType: '拍照签到',
+        objectId: panRes.objectId
+      });
+      onAlert(res?.msg || (res?.success ? '云盘图片签到成功' : '云盘图片签到失败'), res?.success ? 'success' : 'error');
+      if (res?.success) setExpanded(prev => ({ ...prev, [activeId]: false }));
+    } catch (err: any) {
+      onAlert(err?.message || '云盘图片签到失败', 'error');
+    } finally {
+      setBusy(prev => ({ ...prev, [activeId]: false }));
+    }
+  };
+
   const events = groupedEvents();
 
   return (
@@ -258,9 +288,19 @@ export default function RightPanel({ phone, monitorEvents, onAlert, onCourseReco
                         fullWidth
                         disabled={isBusy}
                         onClick={() => document.getElementById(`photo-input-${activeId}`)?.click()}
+                        style={{ borderRadius: 8, marginBottom: 6 }}
+                      >
+                        {isBusy ? <CircularProgress size={14} /> : '选择本地图片签到'}
+                      </Button>
+                      <Button
+                        size='small'
+                        variant='outlined'
+                        fullWidth
+                        disabled={isBusy}
+                        onClick={() => handlePanPhotoSign(ev)}
                         style={{ borderRadius: 8 }}
                       >
-                        {isBusy ? <CircularProgress size={14} /> : '选择图片并签到'}
+                        使用云盘图片签到
                       </Button>
                     </div>
                   )}

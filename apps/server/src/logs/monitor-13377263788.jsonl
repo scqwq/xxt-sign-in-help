@@ -159,3 +159,21 @@
 {"time":"2026-09-12T03:41:01.283Z","type":"child_stdout","payload":"检测到活动：普通签到\n"}
 {"time":"2026-09-12T03:41:08.958Z","type":"poll_shutdown","payload":{"reason":"SIGINT"}}
 {"time":"2026-09-12T03:41:08.982Z","type":"child_process_exit","payload":{"code":null,"signal":"SIGTERM","pid":75560}}
+{"time":"2026-09-12T04:04:41.315Z","type":"start_request","payload":{"contentType":"application/json","rawBodyType":"string","parsedBodyType":"object","bodyKeys":["payload"]}}
+{"time":"2026-09-12T04:04:41.319Z","type":"fork_prepare","payload":{"script":"D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\poll.ts","exists":true,"isTypeScript":true,"payloadLength":1448,"execPath":"D:\\moresoftware\\nodejs\\node.exe"}}
+{"time":"2026-09-12T04:04:41.363Z","type":"child_process_forked","payload":{"pid":57220}}
+{"time":"2026-09-12T04:04:43.039Z","type":"child_stdout","payload":"\u001b[0m\u001b[?25h"}
+{"time":"2026-09-12T04:04:43.042Z","type":"child_stdout","payload":"\u001b[?1l"}
+{"time":"2026-09-12T04:04:43.040Z","type":"poll_startup","payload":{"mode":"web","pollInterval":30}}
+{"time":"2026-09-12T04:04:43.372Z","type":"poll_ready","payload":{"realname":"零梁志"}}
+{"time":"2026-09-12T04:04:43.375Z","type":"child_stdout","payload":"[轮询监听中] 每 30 秒检查一次课程签到活动...\n"}
+{"time":"2026-09-12T04:04:43.889Z","type":"child_stdout","payload":"检测到活动：普通签到\n"}
+{"time":"2026-09-12T04:04:44.000Z","type":"poll_activity_detected","payload":{"activeId":8000175117416,"name":"普通签到","courseId":"266906839","courseName":"266906839","signType":"拍照签到","shouldAutoSign":false}}
+{"time":"2026-09-12T04:04:44.002Z","type":"child_stdout","payload":"[检测到签到] 266906839 - 拍照签到 (手动)\n"}
+{"time":"2026-09-12T04:05:05.216Z","type":"manual_sign_request","payload":{"activeId":"8000175117416","otherId":0,"courseId":"266906839","hasPhoto":true}}
+{"time":"2026-09-12T04:05:07.541Z","type":"manual_sign_result","payload":{"activeId":"8000175117416","result":"[拍照]签到成功","success":true}}
+{"time":"2026-09-12T04:05:15.865Z","type":"child_stdout","payload":"检测到活动：普通签到\n"}
+{"time":"2026-09-12T04:05:47.155Z","type":"child_stdout","payload":"检测到活动：普通签到\n"}
+{"time":"2026-09-12T04:06:00.010Z","type":"child_stdout","payload":"\u001b[0m\u001b[?25h\u001b[?1l"}
+{"time":"2026-09-12T04:06:00.010Z","type":"poll_shutdown","payload":{"reason":"SIGINT"}}
+{"time":"2026-09-12T04:06:00.044Z","type":"child_process_exit","payload":{"code":null,"signal":"SIGTERM","pid":57220}}
