@@ -1,10 +1,10 @@
 import { CHAT_GROUP, PPTSIGN } from '../configs/api';
 import { delay } from '../utils/helper';
 import { cookieSerialize, request } from '../utils/request';
-import { getJsonObject } from '../utils/file';
+import { getAppConfig } from '../config';
 
 const getMobileUA = (): string => {
-  try { return getJsonObject('env.json')?.webim?.userAgent || ''; } catch { return ''; }
+  return getAppConfig().webim.userAgent;
 };
 
 interface AddressItem {

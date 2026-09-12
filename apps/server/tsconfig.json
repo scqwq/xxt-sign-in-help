@@ -2,8 +2,7 @@
   "extends": "tsconfig/server.json",
   "include": [
     "./src",
-    "./types",
-    "./src/env.json"
+    "./types"
   ],
   "compilerOptions": {
     "outDir": "build"

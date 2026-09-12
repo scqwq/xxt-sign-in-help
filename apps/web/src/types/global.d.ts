@@ -2,6 +2,15 @@ declare module '*.module.css';
 
 declare module '@nuintun/qrcode';
 
+interface ImportMetaEnv {
+  readonly VITE_API_URL?: string;
+  readonly VITE_SERVER_PORT?: string;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}
+
 interface UserParamsType {
   phone: string;
   password: string;

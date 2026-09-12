@@ -39,9 +39,6 @@ yarn-error.log*
 *.db-wal
 
 # env.json 配置（包含手机端 UA、环信凭证等敏感信息）
-apps/server/src/env.json
-apps/server/build/env.json
-apps/server/build/configs/env.json
 
 # 签到监听日志（包含用户手机号）
 apps/server/src/logs/

@@ -6,7 +6,7 @@ import { LocationSign, presetAddressChoices } from './functions/location';
 import { getObjectIdFromcxPan, PhotoSign } from './functions/photo';
 import { QRCodeSign } from './functions/qrcode';
 import { getAccountInfo, getCourses, getLocalUsers, userLogin } from './functions/user';
-import { getJsonObject, storeUser } from './utils/file';
+import { storeUser } from './utils/file';
 import { dbGetAllUsers } from './utils/db';
 import { restoreTerminal } from './utils/terminal';
 

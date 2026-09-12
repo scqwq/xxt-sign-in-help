@@ -4,14 +4,11 @@ import { tmpdir } from 'os';
 import path from 'path';
 import { CHAT_GROUP, PANCHAOXING, PANLIST, PANUPLOAD, PPTSIGN } from '../configs/api';
 import { cookieSerialize, request } from '../utils/request';
-import { getJsonObject } from '../utils/file';
+import { getAppConfig } from '../config';
 
-/** 读取 env.json 的手机端 UA，用于拍照签到请求。 */
+/** 读取根目录配置的手机端 UA，用于拍照签到请求。 */
 const getMobileUA = (): string => {
-  try {
-    const cfg = getJsonObject('env.json');
-    return cfg?.webim?.userAgent || '';
-  } catch { return ''; }
+  return getAppConfig().webim.userAgent;
 };
 
 export const PhotoSign = async (

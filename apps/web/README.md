@@ -8,9 +8,9 @@
 
 ## 配置
 
-`src/config/api.ts` ：该文件中配置 `baseUrl` 变量为接口地址，默认 `http://${window.location.hostname}:5000` 。若接口部署在其他服务器，不要忘记将接口地址改为服务器IP或绑定的域名。
+在项目根目录 `.env` 中设置 `PORT` 可改变后端 API 端口，前端会自动拼接 `http://${window.location.hostname}:${PORT}`。若接口部署在其他服务器，设置 `VITE_API_URL` 为完整地址。
 
-`src/pages/DashBoard/Helper.ts` ：若使用腾讯云的通用文字识别服务，二维码识别成功率极高，支持PNG、JPG、JPEG、PDF等格式，图片大小不能超过7M。查看此源码文件中的 parseEnc 函数，可注释掉默认函数，使用推荐函数，同时需要在 `apps/server` 项目中的 `env.json` 中配置 `secretId` 和 `secretKey`。
+`src/pages/DashBoard/Helper.ts` ：若使用腾讯云的通用文字识别服务，二维码识别成功率极高，支持PNG、JPG、JPEG、PDF等格式，图片大小不能超过7M。查看此源码文件中的 parseEnc 函数，可注释掉默认函数，使用推荐函数，同时需要在项目根目录 `.env` 中配置 `TENCENT_SECRET_ID` 和 `TENCENT_SECRET_KEY`。
 
 ## 使用
 

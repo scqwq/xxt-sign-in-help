@@ -1,8 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const tencentcloud = require('tencentcloud-sdk-nodejs');
 const OcrClient = tencentcloud.ocr.v20181119.Client;
-import { getJsonObject } from '../utils/file';
-const ENVJSON = getJsonObject('env.json');
+import { getAppConfig } from '../config';
 
 type QrScanFunc = (source: string, type: 'base64' | 'url') => Promise<any>;
 
@@ -11,8 +10,8 @@ export const QrCodeScan: QrScanFunc = async (source, type) => {
   const payload: any = {};
   const client = new OcrClient({
     credential: {
-      secretId: ENVJSON.tencent.secretId,
-      secretKey: ENVJSON.tencent.secretKey,
+      secretId: getAppConfig().tencent.secretId,
+      secretKey: getAppConfig().tencent.secretKey,
     },
     region: 'ap-shanghai',
     profile: {

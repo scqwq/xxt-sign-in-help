@@ -14,23 +14,20 @@ import { GeneralSign } from './functions/general';
 import { LocationSign } from './functions/location';
 import { getObjectIdFromcxPan, PhotoSign, uploadPhoto } from './functions/photo';
 import { getLocalUsers, userLogin, getCourses, getAccountInfo, getPanToken } from './functions/user';
-import { getJsonObject, getStoredUser, storeUser } from './utils/file';
+import { getStoredUser, storeUser } from './utils/file';
 import { dbGetUser, dbGetAllUsers, dbGetUserCourses, dbUpdateUserConfig } from './utils/db';
 import { delay } from './utils/helper';
 import { writeMonitorLog } from './utils/monitorLogger';
 import { restoreTerminal } from './utils/terminal';
 import { PromptsOptions, addressPrompts, monitorPromptsQuestions } from './configs/prompts';
 import { sendEmail } from './utils/mailer';
+import { getAppConfig } from './config';
 
 restoreTerminal();
 
-/** 读取 env.json 的 monitor 段，控制轮询模式与间隔。 */
+/** 读取根目录配置的 monitor 段，控制轮询间隔。 */
 const loadMonitorConfig = () => {
-  let cfg: any = {};
-  try { cfg = getJsonObject('env.json').monitor || {}; } catch { /* 缺失走默认 */ }
-  return {
-    pollInterval: Number(cfg.pollInterval) > 0 ? Number(cfg.pollInterval) : 60,
-  };
+  return { pollInterval: getAppConfig().monitor.pollInterval };
 };
 
 /** 交互式配置签到信息，与 monitor.ts 的 configure 行为一致。 */
@@ -65,19 +62,14 @@ async function configure(phone: string) {
   return JSON.parse(JSON.stringify({ mailing: config!.mailing, monitor: config!.monitor }));
 }
 
-/** 读取 env.json 的 photo 段。 */
+/** 读取根目录配置的 photo 段。 */
 const loadPhotoConfig = (): { auto: boolean; defaultPath: string } => {
-  let cfg: any = {};
-  try { cfg = getJsonObject('env.json').photo || {}; } catch { /* 缺失走默认 */ }
-  return {
-    auto: cfg.auto !== false,
-    defaultPath: cfg.defaultPath || '',
-  };
+  return getAppConfig().photo;
 };
 
 /**
  * 获取拍照签到的 objectId。
- * 优先级：coursePhotoPath（课程记录里的路径）→ defaultPath（env.json 全局默认）→ 云盘 0.jpg/0.png。
+ * 优先级：coursePhotoPath → defaultPath（根目录全局默认）→ 云盘 0.jpg/0.png。
  */
 async function getPhotoObjectId(cookies: BasicCookie, coursePhotoPath?: string): Promise<string | null> {
   const photoCfg = loadPhotoConfig();

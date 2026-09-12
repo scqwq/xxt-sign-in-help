@@ -1,7 +1,7 @@
 import cryptojs from 'crypto-js';
 import { blue } from 'kolorist';
 import { ACCOUNTMANAGE, COURSELIST, LOGIN, PANTOKEN, WEBIM } from '../configs/api';
-import { getJsonObject } from '../utils/file';
+import { getAppConfig } from '../config';
 import { dbGetAllUsers } from '../utils/db';
 import { writeMonitorLog } from '../utils/monitorLogger';
 import { cookieSerialize, request } from '../utils/request';
@@ -164,25 +164,20 @@ export const getLocalUsers = () => {
 };
 
 /**
- * 读取 env.json 的 webim 配置，构造请求头与目标 URL。
- * 抓包手机端后，把 UA（必要时再加 url / extraHeaders）填入 env.json 的 webim 段即可生效。
+ * 读取根目录配置的 webim 配置，构造请求头与目标 URL。
+ * 抓包手机端后，把 UA（必要时再加 url / extraHeaders）填入根目录配置即可生效。
  */
 const loadWebIMConfig = () => {
-  let cfg: any = {};
-  try {
-    cfg = getJsonObject('env.json').webim || {};
-  } catch { /* env.json 缺失时退回默认行为 */ }
+  const cfg = getAppConfig().webim;
   const headers: Record<string, string> = {};
   if (cfg.userAgent) headers['User-Agent'] = cfg.userAgent;
-  if (cfg.extraHeaders && typeof cfg.extraHeaders === 'object') {
-    for (const [k, v] of Object.entries(cfg.extraHeaders)) {
-      if (typeof v === 'string') headers[k] = v;
-    }
+  for (const [k, v] of Object.entries(cfg.extraHeaders)) {
+    if (typeof v === 'string') headers[k] = v;
   }
   return {
-    url: typeof cfg.url === 'string' && cfg.url.length > 0 ? cfg.url : WEBIM.URL,
+    url: cfg.url || WEBIM.URL,
     headers,
-    credentials: cfg.credentials || null,
+    credentials: cfg.credentials,
   };
 };
 
@@ -213,14 +208,14 @@ const findField = (obj: any, candidates: string[]): string | null => {
  * @returns \{ myName, myToken, myTuid, myPuid \}
  *
  * 默认请求 im.chaoxing.com/webim/me 解析 HTML 隐藏域。
- * 当 env.json 的 webim 段配置了手机端 UA / URL / jsonFields 时，
+ * 当根目录配置设置了手机端 UA / URL / 凭证时，
  * 改用该配置请求，并兼容 JSON 响应（手机端接口常返回 JSON）。
  */
 export const getIMParams = async (cookies: BasicCookie): Promise<IMParamsType | 'AuthFailed' | 'WebIMUnavailable'> => {
   const webimCfg = loadWebIMConfig();
   const logId = String(cookies._uid || 'unknown');
 
-  // 手动覆盖：env.json 的 webim.credentials 填了 tuid+token 就直接用，跳过 HTTP 请求。
+  // 手动覆盖：webim.credentials 填了 tuid+token 就直接用，跳过 HTTP 请求。
   // 用于 webim/me 维护期间，从抓包（WebSocket 握手帧 SASL PLAIN）手动提取凭证的场景。
   const cred = webimCfg.credentials;
   if (cred && cred.tuid && cred.token) {
@@ -229,9 +224,9 @@ export const getIMParams = async (cookies: BasicCookie): Promise<IMParamsType | 
       myTuid: cred.tuid,
       myToken: `${cred.token.slice(0, 20)}...`,
       myName,
-      message: '使用 env.json webim.credentials 手动覆盖，跳过 HTTP 取 token。',
+      message: '使用根目录 webim.credentials 手动覆盖，跳过 HTTP 取 token。',
     });
-    console.log(blue('[IM凭证] 使用 env.json 手动填入的 tuid/token，跳过在线获取。'));
+    console.log(blue('[IM凭证] 使用根目录配置手动填入的 tuid/token，跳过在线获取。'));
     return { myName, myToken: cred.token, myTuid: cred.tuid, myPuid: cookies._uid };
   }
 
@@ -273,7 +268,7 @@ export const getIMParams = async (cookies: BasicCookie): Promise<IMParamsType | 
     return 'WebIMUnavailable';
   }
 
-  // 1) 优先尝试 JSON 解析：自动探测常见字段名，无需在 env.json 手填
+  // 1) 优先尝试 JSON 解析：自动探测常见字段名，无需在配置中手动映射
   const tryJson = (): { myName: string | null; myToken: string; myTuid: string } | null => {
     let obj: any = data;
     if (typeof data === 'string') {

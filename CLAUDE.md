@@ -7,7 +7,7 @@
 ## 技术栈
 
 - **包管理**: pnpm workspaces + turbo
-- **后端**: Koa 2 + TypeScript，HTTP API (端口 5000)
+- **后端**: Koa 2 + TypeScript，HTTP API (默认端口 5000，通过根目录 `.env` 的 `PORT` 配置)
 - **前端**: React 18 + TypeScript + Vite + MUI + Leaflet (地图选点)
 - **数据库**: SQLite (Node.js 内置 `node:sqlite`，无需安装)
 - **通信**: 前后端通过 HTTP REST API 交互；后端 fork 子进程做签到监听，通过 IPC 通信
@@ -47,6 +47,8 @@ pnpm dev:upload-pan   # ts-node 启动云盘上传工具 (CLI)
 ```
 chaoxing-signin/
 ├── package.json              # 根 monorepo 配置，scripts: dev / build / serve / start
+├── .env                      # 主要配置入口: 端口、手机 UA、监听/拍照/凭证等
+├── env.json                  # 兼容配置: .env 非空值优先，未配置项从此读取
 ├── turbo.json                # turbo pipeline 配置
 ├── CLAUDE.md                 # 本文件
 │
@@ -57,12 +59,13 @@ chaoxing-signin/
 │   │   ├── types/
 │   │   │   └── global.d.ts   # 全局类型: User, UserCookieType, CourseType, Activity 等 + node:sqlite 类型声明
 │   │   └── src/
-│   │       ├── env.json      # 全局配置: webim(UA/凭证), monitor(模式/轮询间隔), photo(自动/默认路径)
 │   │       ├── index.ts      # CLI 交互入口 — 选用户/登录/查签到/签到 (pnpm start)
 │   │       ├── serve.ts      # Web API 服务入口 — Koa 路由 + fork 监听子进程 (pnpm serve)
 │   │       ├── monitor.ts    # WebSocket IM 监听模式 — 通过环信 IM 长连接接收签到消息
 │   │       ├── poll.ts       # HTTP 轮询监听模式 — 定时遍历课程活动列表找签到 (默认模式)
 │   │       ├── upload-pan.ts # CLI 云盘上传工具 — 选用户上传图片到超星云盘
+│   │       ├── config/
+│   │       │   └── index.ts # 根目录 .env + env.json 统一配置加载器
 │   │       ├── configs/
 │   │       │   ├── api.ts    # 超星 API 端点常量 (登录/课程/签到/云盘/WebIM)
 │   │       │   ├── prompts.ts # CLI 交互提示问题定义
@@ -79,7 +82,7 @@ chaoxing-signin/
 │   │       │   └── tencent.qrcode.ts # 腾讯云 OCR 识别二维码
 │   │       ├── utils/
 │   │       │   ├── db.ts         # SQLite 数据库模块 — 建表 + CRUD (dbStoreUser/dbGetUser/dbGetAllUsers/dbGetUserCourses/dbUpsertCourse/dbDeleteCourse/dbUpdateUserConfig)
-│   │       │   ├── file.ts       # storeUser/getStoredUser (代理 db.ts) + getJsonObject (读 env.json)
+│   │       │   ├── file.ts       # storeUser/getStoredUser (代理 db.ts)
 │   │       │   ├── request.ts    # HTTP 请求封装 + cookieSerialize
 │   │       │   ├── helper.ts     # delay 等工具函数
 │   │       │   ├── terminal.ts   # restoreTerminal 恢复终端状态 — stty sane + /dev/tty 直写 + 所有信号处理 (SIGINT/SIGTERM/SIGHUP/SIGBREAK)
@@ -99,7 +102,7 @@ chaoxing-signin/
 │           ├── App.tsx       # 布局壳 — 返回按钮 + Outlet
 │           ├── App.css
 │           ├── config/
-│           │   └── api.ts    # 后端 API 端点常量 (baseUrl: localhost:5000)
+│           │   └── api.ts    # 后端 API 端点常量 (默认 localhost:5000，可由根目录 .env 配置)
 │           ├── pages/
 │           │   ├── Start/    # 登录页 — 输入手机号密码登录
 │           │   │   ├── Start.tsx
@@ -151,7 +154,23 @@ courses 表:
 
 ## 关键配置
 
-### env.json (`apps/server/src/env.json`)
+### 根目录 .env + env.json
+
+后端通过 `apps/server/src/config/index.ts` 定位项目根目录：`.env` 中非空值优先，剩余配置兼容读取根目录 `env.json`。Vite 也会从项目根目录读取 `.env`。
+
+```dotenv
+PORT=5000
+VITE_PORT=3000
+CHAOXING_USER_AGENT=手机端 UA (抓包获取，用于拍照签到和位置签到)
+MONITOR_MODE=poll
+MONITOR_POLL_INTERVAL=30
+PHOTO_AUTO=true
+PHOTO_DEFAULT_PATH=
+TENCENT_SECRET_ID=
+TENCENT_SECRET_KEY=
+```
+
+根目录 `env.json` 兼容旧配置：
 
 ```json
 {
@@ -191,7 +210,7 @@ courses 表:
 2. 填入地址 → 点「位置签到」
 3. `LocationSign` 调 `pptSign/stuSignajax` 带经纬度、地址、手机端 UA 完成签到
 
-## API 路由 (后端, 端口 5000)
+## API 路由 (后端, 默认端口 5000)
 
 | 方法 | 路径 | 作用 |
 |------|------|------|
@@ -218,7 +237,7 @@ courses 表:
 ## 注意事项
 
 - `node:sqlite` 需要 Node.js 22.5+，当前项目要求 Node >= 18，实际运行需 >= 22.5
-- `env.json` 中的 `webim.userAgent` 需要抓包手机端获取，用于拍照签到和位置签到（填入 URL 的 `useragent` 参数 + HTTP `User-Agent` 请求头）
+- 根目录 `.env` 的 `CHAOXING_USER_AGENT`（兼容 `env.json` 的 `webim.userAgent`）需要抓包手机端获取，用于拍照签到和位置签到（填入 URL 的 `useragent` 参数 + HTTP `User-Agent` 请求头）
 - WebIM (环信 IM) 接口 `im.chaoxing.com/webim/me` 可能处于维护状态，故默认使用轮询模式
 - 拍照签到可能遇到服务端错误 `photoAuthError_PCR007`，位置签到可能遇到 `locationAuthError_LCR007`，均为超星服务端验证，已通过填入手机端 UA 尝试修复，若仍失败则可能是超星增加了无法绕过的内容验证
 - 防作弊滑动验证码：超星服务端反作弊机制，无法绕过；遇到时需在手机端 App 手动完成

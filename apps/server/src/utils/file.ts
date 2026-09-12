@@ -1,5 +1,3 @@
-import filehandle from 'fs';
-import path from 'path';
 import { dbStoreUser, dbGetUser } from './db';
 
 /**
@@ -16,11 +14,4 @@ export const storeUser = (phone: string, user: User): void => {
 
 export const getStoredUser = (phone: string): User | null => {
   return dbGetUser(phone);
-};
-
-/**
- * 读取 JSON 配置文件（仅用于 env.json 等静态配置，不再用于 storage.json）
- */
-export const getJsonObject = (fileURL: string) => {
-  return JSON.parse(filehandle.readFileSync(path.join(__dirname, '../' + fileURL), 'utf8'));
 };

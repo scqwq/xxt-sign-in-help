@@ -12,7 +12,7 @@ import { getObjectIdFromcxPan, PhotoSign, PhotoSign_2 } from './functions/photo'
 import { QRCodeSign } from './functions/qrcode';
 import { QrCodeScan } from './functions/tencent.qrcode';
 import { getIMParams, getLocalUsers, userLogin } from './functions/user';
-import { getJsonObject, getStoredUser, storeUser } from './utils/file';
+import { getStoredUser, storeUser } from './utils/file';
 import { dbGetUser, dbGetAllUsers, dbUpdateUserConfig } from './utils/db';
 import { delay } from './utils/helper';
 import { sendEmail } from './utils/mailer';

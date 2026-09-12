@@ -66,26 +66,13 @@ pnpm install
 ```
 
 ### 3. 配置
-**env.json**现在读取的位置：apps/server/src/env.json（含手机端 UA 等配置，注意填userAgent是最重要的）
-
-.env现在也没有正确读取，当前依然是硬编码，pnpm dev后打开的端口为3000
-
-未进行的(需要修正的希望的)改动：
-**env.json**（项目根目录，含手机端 UA 等配置）：
-
-```bash
-cp env.example.json env.json
-```
-
-编辑 `env.json`，填入 `webim.userAgent`（通过手机端超星 App 抓包获取）。
-
-**.env**（项目根目录，端口等环境变量）：
+项目根目录的 `.env` 是主要配置入口。如已有旧版 `apps/server/src/env.json`，可先把它复制为根目录 `env.json`；后端会继续读取这个根目录 JSON 作为兼容配置，`.env` 中填入的非空值优先。
 
 ```bash
 cp .env.example .env
 ```
 
-编辑 `.env`，按需修改端口等配置。
+编辑 `.env`，填入 `CHAOXING_USER_AGENT`，并按需修改 `PORT` 和 `VITE_PORT`。
 
 
 ### 4. 生产部署
@@ -96,7 +83,7 @@ pnpm dev        #前后端同时启动
 pnpm serve      # 启动后端服务（提供静态页面 + API）
 ```
 
-前端开发服务器在 `http://localhost:3000`，后端 API 在 `http://localhost:5000`。
+按默认配置，前端开发服务器在 `http://localhost:3000`，后端 API 在 `http://localhost:5000`。
 
 ### 5. CLI 模式（命令行签到）
 
@@ -116,7 +103,7 @@ docker run -d -p 80:80 -p 5000:5000 ghcr.io/cxorz/chaoxing-signin
 
 ## 配置说明
 
-### env.json（项目根目录）
+### 根目录 env.json（兼容配置）
 
 ######总结注意：userAgent是最重要的，先填这个，获取UA一般要通过手机抓包获取
 
@@ -135,6 +122,8 @@ docker run -d -p 80:80 -p 5000:5000 ghcr.io/cxorz/chaoxing-signin
 |---|---|---|
 | `PORT` | 后端服务端口 | 5000 |
 | `VITE_PORT` | 前端开发服务器端口（仅开发模式） | 3000 |
+| `CHAOXING_USER_AGENT` | 手机端超星 App 的 User-Agent；填入后覆盖 `env.json` 中的同名字段 | 空 |
+| `VITE_API_URL` | 前端请求的后端地址；不填时使用当前主机名 + `PORT` | 空 |
 
 ### 地图设置（Web 界面左下角）
 

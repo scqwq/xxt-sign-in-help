@@ -1,4 +1,5 @@
-const baseUrl = `http://${window.location.hostname}:5000`;
+const serverPort = import.meta.env.VITE_SERVER_PORT || '5000';
+const baseUrl = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:${serverPort}`;
 
 export const login_api = baseUrl + '/login';
 

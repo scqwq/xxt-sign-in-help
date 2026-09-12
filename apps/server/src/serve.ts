@@ -13,12 +13,13 @@ import { PhotoSign, uploadPhoto, getObjectIdFromcxPan } from './functions/photo'
 import { QRCodeSign } from './functions/qrcode';
 import { QrCodeScan } from './functions/tencent.qrcode';
 import { getAccountInfo, getCourses, getPanToken, userLogin } from './functions/user';
-import { getJsonObject, storeUser } from './utils/file';
+import { storeUser } from './utils/file';
 import { dbGetUser, dbGetUserCourses, dbUpsertCourse, dbDeleteCourse } from './utils/db';
 import { delay } from './utils/helper';
 import { writeMonitorLog } from './utils/monitorLogger';
 import { restoreTerminal } from './utils/terminal';
-const ENVJSON = getJsonObject('env.json');
+import { getAppConfig } from './config';
+const ENVJSON = getAppConfig();
 
 // pnpm/turbo 退出异常后可能遗留控制台 raw mode，服务启动时主动复位。
 restoreTerminal();
@@ -326,10 +327,7 @@ router.post('/monitor/start/:phone', async (ctx) => {
     return;
   }
   const monitorIsTypeScript = !fs.existsSync(path.join(__dirname, 'monitor.js'));
-  // env.json 的 monitor.mode 为 "poll" 时走 HTTP 轮询（不依赖 WebIM），否则走 WebSocket 监听。
-  let monitorMode = 'websocket';
-  try { monitorMode = getJsonObject('env.json').monitor?.mode || 'websocket'; } catch { /* 缺失走默认 */ }
-  const monitorFile = monitorMode === 'poll' ? 'poll' : 'monitor';
+  const monitorFile = ENVJSON.monitor.mode === 'poll' ? 'poll' : 'monitor';
   const monitorScript = path.join(__dirname, monitorIsTypeScript ? `${monitorFile}.ts` : `${monitorFile}.js`);
   let authPayload: string | undefined;
   // 当前 Web 端发送 { payload: base64 }；兼容旧版本直接发送 base64 字符串。
@@ -613,8 +611,8 @@ process.once('exit', restoreTerminal);
 
 // 若在服务器，直接运行
 if (!ENVJSON.env.SERVERLESS)
-  app.listen(5000, () => {
-    console.log('API Server: http://localhost:5000');
+  app.listen(ENVJSON.server.port, () => {
+    console.log(`API Server: http://localhost:${ENVJSON.server.port}`);
   });
 
 // 导出云函数
