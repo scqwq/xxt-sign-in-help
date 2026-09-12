@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, CSSProperties } from 'react';
+﻿import { useEffect, useRef, useState, CSSProperties } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { gcj02ToWgs84, wgs84ToGcj02, gcj02ToBd09 } from '../../utils/gcoord';
@@ -8,6 +8,9 @@ interface MapSettings {
   defaultCity: string;
   defaultLat: number;
   defaultLon: number;
+  centerMode: string;
+  customLat: number;
+  customLon: number;
   coordMode: string;
   successAutoHide: number;
 }
@@ -17,7 +20,10 @@ const DEFAULT_MAP_SETTINGS: MapSettings = {
   defaultCity: '北京',
   defaultLat: 39.9042,
   defaultLon: 116.4074,
-  coordMode: 'none',
+  centerMode: 'city',
+  customLat: 39.9042,
+  customLon: 116.4074,
+  coordMode: 'bd09',
   successAutoHide: 30,
 };
 
@@ -109,7 +115,7 @@ export default function MapPicker({ onClose, onConfirm }: MapPickerProps) {
     });
 
     const map = L.map(mapRef.current, {
-      center: [settings.current.defaultLat, settings.current.defaultLon],
+      center: [settings.current.centerMode === 'custom' ? settings.current.customLat : settings.current.defaultLat, settings.current.centerMode === 'custom' ? settings.current.customLon : settings.current.defaultLon],
       zoom: 12,
       layers: [amapLayer],
     });

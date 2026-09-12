@@ -8,7 +8,7 @@ node_modules
 # testing
 coverage
 
-# next.js
+# build output
 .next/
 out/
 build
@@ -25,14 +25,31 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# local env files
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
 # turbo
 .turbo
 
 # vscode
 /*.http
+
+# ===== 敏感文件（切勿提交到远程仓库）=====
+
+# SQLite 数据库（包含用户登录凭证）
+*.db
+*.db-shm
+*.db-wal
+
+# env.json 配置（包含手机端 UA、环信凭证等敏感信息）
+apps/server/src/env.json
+apps/server/build/env.json
+apps/server/build/configs/env.json
+
+# 签到监听日志（包含用户手机号）
+apps/server/src/logs/
+apps/server/build/logs/
+
+# 环境变量文件
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local

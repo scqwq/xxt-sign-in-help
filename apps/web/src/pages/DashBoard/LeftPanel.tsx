@@ -1,4 +1,4 @@
-import { Button, CircularProgress, Chip, Switch, TextField, MenuItem } from '@mui/material';
+﻿import { Button, CircularProgress, Chip, Switch, TextField, MenuItem, FormControlLabel } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { deleteCourse, getCourses, saveCourse, uploadToPan } from './Helper';
 
@@ -7,6 +7,9 @@ interface MapSettings {
   defaultCity: string;
   defaultLat: number;
   defaultLon: number;
+  centerMode: string;
+  customLat: number;
+  customLon: number;
   coordMode: string;
   successAutoHide: number;
 }
@@ -16,7 +19,10 @@ const DEFAULT_MAP_SETTINGS: MapSettings = {
   defaultCity: '北京',
   defaultLat: 39.9042,
   defaultLon: 116.4074,
-  coordMode: 'none',
+  centerMode: 'city',
+  customLat: 39.9042,
+  customLon: 116.4074,
+  coordMode: 'bd09',
   successAutoHide: 30,
 };
 
@@ -212,21 +218,55 @@ export default function LeftPanel({ phone, monitorOnline, monitorLoading, onTogg
       <div className='panel'>
         <h3>地图设置</h3>
         <p className='muted' style={{ marginBottom: 12 }}>配置位置签到地图和签到显示</p>
-        <TextField
-          select
-          label='默认城市'
-          value={mapSettings.defaultCity}
-          onChange={(e) => {
-            const city = PRESET_CITIES.find(c => c.name === e.target.value);
-            if (city) updateMapSettings({ defaultCity: city.name, defaultLat: city.lat, defaultLon: city.lon });
-          }}
-          fullWidth
-          variant='outlined'
-          size='small'
-          style={{ marginBottom: 12 }}
-        >
-          {PRESET_CITIES.map(c => <MenuItem key={c.name} value={c.name}>{c.name}</MenuItem>)}
-        </TextField>
+        <FormControlLabel
+          label='使用自定义坐标作为地图初始位置'
+          control={
+            <Switch
+              size='small'
+              checked={mapSettings.centerMode === 'custom'}
+              onChange={(e) => updateMapSettings({ centerMode: e.target.checked ? 'custom' : 'city' })}
+            />
+          }
+          style={{ marginBottom: 8 }}
+        />
+        {mapSettings.centerMode === 'city' ? (
+          <TextField
+            select
+            label='默认城市'
+            value={mapSettings.defaultCity}
+            onChange={(e) => {
+              const city = PRESET_CITIES.find(c => c.name === e.target.value);
+              if (city) updateMapSettings({ defaultCity: city.name, defaultLat: city.lat, defaultLon: city.lon });
+            }}
+            fullWidth
+            variant='outlined'
+            size='small'
+            style={{ marginBottom: 12 }}
+          >
+            {PRESET_CITIES.map(c => <MenuItem key={c.name} value={c.name}>{c.name}</MenuItem>)}
+          </TextField>
+        ) : (
+          <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+            <TextField
+              label='自定义纬度'
+              value={mapSettings.customLat}
+              onChange={(e) => updateMapSettings({ customLat: Number(e.target.value) || 0 })}
+              type='number'
+              fullWidth
+              variant='outlined'
+              size='small'
+            />
+            <TextField
+              label='自定义经度'
+              value={mapSettings.customLon}
+              onChange={(e) => updateMapSettings({ customLon: Number(e.target.value) || 0 })}
+              type='number'
+              fullWidth
+              variant='outlined'
+              size='small'
+            />
+          </div>
+        )}
         <TextField
           label='高德地图 API Key'
           value={mapSettings.amapKey}

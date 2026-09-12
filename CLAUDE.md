@@ -37,7 +37,7 @@ pnpm dev:upload-pan   # ts-node 启动云盘上传工具 (CLI)
 3. **自动签到**: 按课程配置自动签到开关，检测到签到活动后自动完成
 4. **手动签到**: Web 界面手动触发签到，支持选本地图片 / 云盘图片 / 地图选点
 5. **拍照签到**: 上传图片到超星云盘获取 objectId，再调签到接口；支持本地图片和云盘已有图片两种方式
-6. **位置签到**: 集成高德地图，支持地址搜索自动补全（需配置高德API Key）、点击选位置、GCJ-02→WGS-84坐标自动转换
+6. **位置签到**: 集成高德地图，支持地址搜索自动补全（需配置高德API Key）、点击选位置、坐标自动转换（默认BD-09百度坐标，可切换WGS-84/GCJ-02）
 7. **课程管理**: 记录课程、设置自动签到、设置拍照图片路径
 8. **云盘上传**: Web 界面上传图片到超星云盘，或 CLI 工具 `pnpm dev:upload-pan`
 9. **错误处理**: 签到失败显示具体错误信息 + "再次签到"按钮，支持重试
@@ -226,3 +226,22 @@ courses 表:
 - Ctrl+C 退出后终端异常时，运行 `pnpm reset` 或手动输入 `stty sane` 恢复
 - 二维码签到 (otherId=2) 需要 `enc` 参数（从二维码解析），当前前端尚未提供 enc 输入表单
 - 签到码签到 (otherId=5) 前端有输入框但后端未将签到码传给超星，实际执行普通签到
+## 地图设置 (Web 界面左下角)
+
+存储在浏览器 localStorage 的 map_settings 中，全局生效：
+
+| 设置项 | 说明 | 默认值 |
+|---|---|---|
+| defaultCity / defaultLat / defaultLon | 默认城市及中心坐标 | 北京 39.9042, 116.4074 |
+| centerMode | 地图初始位置模式：city（默认城市）或 custom（自定义坐标） | city |
+| customLat / customLon | 自定义初始坐标 | 39.9042, 116.4074 |
+| mapKey | 高德 Web 服务 API Key，填入后启用地址搜索 | 空 |
+| coordMode | 坐标转换模式：d09（百度，默认）/ wgs84（GPS）/ gcj02（高德）/ 
+one（不转换） | d09 |
+| successAutoHide | 签到成功后自动隐藏秒数，0=不隐藏 | 30 |
+
+## 手动签到状态显示
+
+- 手动签到后，RightPanel 通过 manualResults 本地状态立即更新任务流显示（✅/❌）
+- 签到成功后，按 successAutoHide 秒数自动将条目加入 hiddenIds 隐藏
+- 坐标转换工具：pps/web/src/utils/gcoord.ts（GCJ-02 ↔ WGS-84 ↔ BD-09）
