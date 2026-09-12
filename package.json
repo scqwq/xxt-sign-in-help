@@ -8,6 +8,8 @@
   ],
   "scripts": {
     "dev": "turbo run dev:serve dev --filter=./apps/*",
+    "postdev": "stty sane 2>/dev/null || true",
+    "reset": "stty sane 2>/dev/null || true",
     "build": "turbo run build",
     "start": "node ./apps/server/build/index.js",
     "serve": "node ./apps/server/build/serve.js",

@@ -294,12 +294,14 @@ const shutdown = () => {
   shuttingDown = true;
   if (reconnectTimer) clearTimeout(reconnectTimer);
   restoreTerminal();
-  writeMonitorLog(process.argv[2] === '--auth' ? process.argv[3] : 'cli', 'shutdown', { reason: 'SIGINT' });
-  setTimeout(() => process.exit(0), 50).unref();
+  writeMonitorLog(process.argv[2] === '--auth' ? process.argv[3] : 'cli', 'shutdown', { reason: 'signal' });
+  process.exit(0);
 };
 
 process.once('SIGINT', shutdown);
 process.once('SIGTERM', shutdown);
+process.once('SIGHUP', shutdown);
+process.once('SIGBREAK', shutdown);
 process.once('exit', restoreTerminal);
 process.on('uncaughtException', (error) => {
   writeMonitorLog(process.argv[2] === '--auth' ? process.argv[3] : 'cli', 'uncaughtException', { message: error.message, stack: error.stack });

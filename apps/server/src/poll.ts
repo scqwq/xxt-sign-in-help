@@ -150,11 +150,13 @@ const shutdown = () => {
   if (shuttingDown) return;
   shuttingDown = true;
   restoreTerminal();
-  writeMonitorLog(process.argv[2] === '--auth' ? process.argv[3] : 'cli', 'poll_shutdown', { reason: 'SIGINT' });
-  setTimeout(() => process.exit(0), 50).unref();
+  writeMonitorLog(process.argv[2] === '--auth' ? process.argv[3] : 'cli', 'poll_shutdown', { reason: 'signal' });
+  process.exit(0);
 };
 process.once('SIGINT', shutdown);
 process.once('SIGTERM', shutdown);
+process.once('SIGHUP', shutdown);
+process.once('SIGBREAK', shutdown);
 process.once('exit', restoreTerminal);
 process.on('uncaughtException', (error) => {
   writeMonitorLog(process.argv[2] === '--auth' ? process.argv[3] : 'cli', 'poll_uncaughtException', { message: error.message, stack: error.stack });

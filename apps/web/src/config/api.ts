@@ -4,6 +4,8 @@ export const login_api = baseUrl + '/login';
 
 export const activity_api = baseUrl + '/activity';
 
+export const activity_info_api = baseUrl + '/activity-info';
+
 export const general_api = baseUrl + '/general';
 
 export const photo_api = baseUrl + '/photo';

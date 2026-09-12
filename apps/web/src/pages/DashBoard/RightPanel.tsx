@@ -6,6 +6,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Snackbar from '@mui/material/Snackbar';
 import { useEffect, useState } from 'react';
 import { getPanPhoto, manualPhotoSign, manualSign, saveCourse, signWithPanPhoto } from './Helper';
+import MapPicker from './MapPicker';
 
 interface RightPanelProps {
   phone: string;
@@ -35,6 +36,8 @@ export default function RightPanel({ phone, monitorEvents, onAlert, onCourseReco
   const [locationInput, setLocationInput] = useState<{ [activeId: string]: { latlon: string; address: string } }>({});
   // 签到码输入
   const [signCodeInput, setSignCodeInput] = useState<{ [activeId: string]: string }>({});
+  // 地图选择器：当前选中的 activeId (null=不显示)
+  const [mapPickerFor, setMapPickerFor] = useState<string | null>(null);
 
   // 按活动分组事件：一个 activeId 可能有多条事件（detected/processing/result）
   const groupedEvents = () => {
@@ -243,7 +246,7 @@ export default function RightPanel({ phone, monitorEvents, onAlert, onCourseReco
                     {signTypeText(ev.otherId, ev.ifphoto)} · 活动 {ev.activeId}
                   </span>
                   {hasResult && (
-                    <span className='muted' style={{ color: isSuccess ? '#16a34a' : '#dc2626', marginTop: 4, display: 'block' }}>
+                    <span className='muted' style={{ color: isSuccess ? '#16a34a' : '#dc2626', marginTop: 4, display: 'block', fontWeight: 500 }}>
                       {resultText}
                     </span>
                   )}
@@ -266,6 +269,20 @@ export default function RightPanel({ phone, monitorEvents, onAlert, onCourseReco
                         style={{ borderRadius: 8 }}
                       >
                         记录课程
+                      </Button>
+                    </div>
+                  )}
+                  {/* 签到失败后显示"再次签到"按钮 */}
+                  {hasResult && !isSuccess && (
+                    <div className='sign-event-actions'>
+                      <Button
+                        size='small'
+                        variant='contained'
+                        disabled={isBusy}
+                        onClick={() => handleManualSign(ev)}
+                        style={{ borderRadius: 8 }}
+                      >
+                        {isBusy ? <CircularProgress size={14} /> : '再次签到'}
                       </Button>
                     </div>
                   )}
@@ -307,6 +324,15 @@ export default function RightPanel({ phone, monitorEvents, onAlert, onCourseReco
                   {/* 展开的位置签到表单 */}
                   {isExpanded && ev.otherId === 4 && (
                     <div className='manual-sign-form'>
+                      <Button
+                        size='small'
+                        variant='outlined'
+                        fullWidth
+                        onClick={() => setMapPickerFor(activeId)}
+                        style={{ borderRadius: 8, marginBottom: 6 }}
+                      >
+                        📍 点击地图选择位置
+                      </Button>
                       <input
                         className='input-area'
                         placeholder='经纬度，例: 116.417492,39.920912'
@@ -354,6 +380,19 @@ export default function RightPanel({ phone, monitorEvents, onAlert, onCourseReco
           })}
         </div>
       </div>
+      {/* 地图选择器弹窗 */}
+      {mapPickerFor && (
+        <MapPicker
+          onClose={() => setMapPickerFor(null)}
+          onConfirm={(lat, lon, address) => {
+            setLocationInput(prev => ({
+              ...prev,
+              [mapPickerFor]: { latlon: `${lat},${lon}`, address }
+            }));
+            setMapPickerFor(null);
+          }}
+        />
+      )}
     </div>
   );
 }

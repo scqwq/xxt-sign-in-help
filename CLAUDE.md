@@ -8,7 +8,7 @@
 
 - **包管理**: pnpm workspaces + turbo
 - **后端**: Koa 2 + TypeScript，HTTP API (端口 5000)
-- **前端**: React 18 + TypeScript + Vite + MUI
+- **前端**: React 18 + TypeScript + Vite + MUI + Leaflet (地图选点)
 - **数据库**: SQLite (Node.js 内置 `node:sqlite`，无需安装)
 - **通信**: 前后端通过 HTTP REST API 交互；后端 fork 子进程做签到监听，通过 IPC 通信
 
@@ -20,6 +20,7 @@ pnpm dev              # 同时启动前端 (Vite) + 后端 (Koa) 开发服务器
 pnpm build            # 构建前后端 (turbo run build)
 pnpm serve            # 运行构建后的后端 (node build/serve.js)
 pnpm start            # 运行 CLI 交互模式 (node build/index.js)
+pnpm reset            # 重置终端状态 (Ctrl+C 后终端异常时使用)
 ```
 
 后端单独命令 (在 apps/server 下):
@@ -34,10 +35,12 @@ pnpm dev:upload-pan   # ts-node 启动云盘上传工具 (CLI)
 1. **账号登录**: 手机号+密码登录超星，凭证存入 SQLite + 浏览器 IndexedDB
 2. **签到监听**: 两种模式 — HTTP 轮询 (poll.ts, 默认) 和 WebSocket IM (monitor.ts, 需环信 token)
 3. **自动签到**: 按课程配置自动签到开关，检测到签到活动后自动完成
-4. **手动签到**: Web 界面手动触发签到，支持选本地图片 / 云盘图片
-5. **拍照签到**: 上传图片到超星云盘获取 objectId，再调签到接口
-6. **课程管理**: 记录课程、设置自动签到、设置拍照图片路径
-7. **云盘上传**: Web 界面上传图片到超星云盘，或 CLI 工具 `pnpm dev:upload-pan`
+4. **手动签到**: Web 界面手动触发签到，支持选本地图片 / 云盘图片 / 地图选点
+5. **拍照签到**: 上传图片到超星云盘获取 objectId，再调签到接口；支持本地图片和云盘已有图片两种方式
+6. **位置签到**: 集成高德地图，点击地图选位置自动填入经纬度，无需手动查坐标
+7. **课程管理**: 记录课程、设置自动签到、设置拍照图片路径
+8. **云盘上传**: Web 界面上传图片到超星云盘，或 CLI 工具 `pnpm dev:upload-pan`
+9. **错误处理**: 签到失败显示具体错误信息 + "再次签到"按钮，支持重试
 
 ## 目录结构
 
@@ -69,8 +72,8 @@ chaoxing-signin/
 │   │       │   ├── user.ts       # userLogin 登录, getCourses 课程列表, getAccountInfo 用户名, getPanToken 云盘 token, getLocalUsers 本地用户列表, getIMParams 环信 token
 │   │       │   ├── activity.ts   # getActivity 查签到活动, preSign 预签, traverseCourseActivity 遍历课程找活动, getSignType 签到类型, getPPTActiveInfo 活动详情
 │   │       │   ├── general.ts    # GeneralSign 普通签到
-│   │       │   ├── photo.ts      # PhotoSign 拍照签到, uploadPhoto 上传图片到云盘, getObjectIdFromcxPan 从云盘找已有图片
-│   │       │   ├── location.ts   # LocationSign 位置签到
+│   │       │   ├── photo.ts      # PhotoSign 拍照签到(带手机UA), uploadPhoto 上传图片到云盘(带手机UA), getObjectIdFromcxPan 从云盘找已有图片
+│   │       │   ├── location.ts   # LocationSign 位置签到(带手机UA)
 │   │       │   ├── qrcode.ts     # QRCodeSign 二维码签到
 │   │       │   ├── cq.ts         # CQ HTTP 上报 (go-cqhttp 对接)
 │   │       │   └── tencent.qrcode.ts # 腾讯云 OCR 识别二维码
@@ -79,7 +82,7 @@ chaoxing-signin/
 │   │       │   ├── file.ts       # storeUser/getStoredUser (代理 db.ts) + getJsonObject (读 env.json)
 │   │       │   ├── request.ts    # HTTP 请求封装 + cookieSerialize
 │   │       │   ├── helper.ts     # delay 等工具函数
-│   │       │   ├── terminal.ts   # restoreTerminal 恢复终端状态 (Ctrl+C 后)
+│   │       │   ├── terminal.ts   # restoreTerminal 恢复终端状态 — stty sane + /dev/tty 直写 + 所有信号处理 (SIGINT/SIGTERM/SIGHUP/SIGBREAK)
 │   │       │   ├── mailer.ts     # 邮件通知
 │   │       │   ├── monitorLogger.ts # 签到日志写入 (JSONL 格式, logs/ 目录)
 │   │       │   ├── copyFiles.ts  # 文件复制工具
@@ -105,8 +108,9 @@ chaoxing-signin/
 │           │   └── DashBoard/ # 签到控制台 (左右分栏布局)
 │           │       ├── DashBoard.tsx   # 布局容器 — 管理用户参数/监听状态/事件轮询
 │           │       ├── LeftPanel.tsx   # 左侧 — 监听开关/手动刷新/云盘上传/已记录课程列表(自动签到Switch+图片路径)
-│           │       ├── RightPanel.tsx  # 右侧 — 签到任务流/手动签到(本地图片+云盘图片)/记录课程
-│           │       ├── Helper.ts       # API 封装 — generalSign/photoSign/locationSign/qrcodeSign/课程CRUD/手动签到/云盘上传
+│           │       ├── RightPanel.tsx  # 右侧 — 签到任务流/手动签到(本地图片+云盘图片)/记录课程/再次签到/地图选点
+│           │       ├── MapPicker.tsx   # 地图选点弹窗 — Leaflet + 高德地图瓦片，点击地图获取经纬度
+│           │       ├── Helper.ts       # API 封装 — generalSign/photoSign/locationSign/qrcodeSign/课程CRUD/手动签到/云盘上传/云盘图片查询
 │           │       └── DashBoard.css  # 拟态风格 grid 左右分栏
 │           ├── components/
 │           │   └── UserCard/ # 用户卡片组件 (登录后展示)
@@ -177,9 +181,15 @@ courses 表:
 ### 拍照签到流程
 
 1. `getPanToken` 获取云盘 token
-2. `uploadPhoto` 上传图片到 `pan-yz.chaoxing.com` 获取 `objectId`
-3. `PhotoSign` 调 `mobilelearn.chaoxing.com/pptSign/stuSignajax` 完成签到
-4. 或: 直接用云盘已有图片的 `objectId` 签到 (跳过上传)
+2. `uploadPhoto` 上传图片到 `pan-yz.chaoxing.com` 获取 `objectId`（带手机端 UA）
+3. `PhotoSign` 调 `mobilelearn.chaoxing.com/pptSign/stuSignajax` 完成签到（带手机端 UA）
+4. 或: 直接用云盘已有图片的 `objectId` 签到 (跳过上传，点"使用云盘图片签到")
+
+### 位置签到流程
+
+1. 用户点击「📍 点击地图选择位置」→ 弹出高德地图 → 点击地图获取经纬度
+2. 填入地址 → 点「位置签到」
+3. `LocationSign` 调 `pptSign/stuSignajax` 带经纬度、地址、手机端 UA 完成签到
 
 ## API 路由 (后端, 端口 5000)
 
@@ -200,14 +210,19 @@ courses 表:
 | GET  | `/courses/:phone` | 获取用户课程记录 |
 | POST | `/courses/:phone` | 新增/更新课程记录 |
 | DELETE | `/courses/:phone/:courseId` | 删除课程记录 |
-| POST | `/monitor/sign/:phone` | 手动签到统一入口 (支持 multipart 图片) |
+| POST | `/monitor/sign/:phone` | 手动签到统一入口 (支持 multipart 图片 / objectId 云盘图片) |
 | POST | `/upload-pan/:phone` | 上传图片到云盘 |
 | GET  | `/pan-photos/:phone` | 查询云盘图片 objectId |
+| GET  | `/activity-info/:phone/:activeId` | 获取活动详情 (含签到类型、是否需拍照等) |
 
 ## 注意事项
 
 - `node:sqlite` 需要 Node.js 22.5+，当前项目要求 Node >= 18，实际运行需 >= 22.5
-- `env.json` 中的 `webim.userAgent` 需要抓包手机端获取，用于拍照签到
+- `env.json` 中的 `webim.userAgent` 需要抓包手机端获取，用于拍照签到和位置签到（填入 URL 的 `useragent` 参数 + HTTP `User-Agent` 请求头）
 - WebIM (环信 IM) 接口 `im.chaoxing.com/webim/me` 可能处于维护状态，故默认使用轮询模式
-- 拍照签到可能遇到服务端错误 `photoAuthError_PCR007`，这是超星的照片验证，客户端无法绕过
+- 拍照签到可能遇到服务端错误 `photoAuthError_PCR007`，位置签到可能遇到 `locationAuthError_LCR007`，均为超星服务端验证，已通过填入手机端 UA 尝试修复，若仍失败则可能是超星增加了无法绕过的内容验证
+- 防作弊滑动验证码：超星服务端反作弊机制，无法绕过；遇到时需在手机端 App 手动完成
 - 前端用户凭证存在 IndexedDB (浏览器) + SQLite (服务端) 双份
+- Ctrl+C 退出后终端异常时，运行 `pnpm reset` 或手动输入 `stty sane` 恢复
+- 二维码签到 (otherId=2) 需要 `enc` 参数（从二维码解析），当前前端尚未提供 enc 输入表单
+- 签到码签到 (otherId=5) 前端有输入框但后端未将签到码传给超星，实际执行普通签到

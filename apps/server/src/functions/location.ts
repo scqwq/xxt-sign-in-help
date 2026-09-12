@@ -1,6 +1,11 @@
 import { CHAT_GROUP, PPTSIGN } from '../configs/api';
 import { delay } from '../utils/helper';
 import { cookieSerialize, request } from '../utils/request';
+import { getJsonObject } from '../utils/file';
+
+const getMobileUA = (): string => {
+  try { return getJsonObject('env.json')?.webim?.userAgent || ''; } catch { return ''; }
+};
 
 interface AddressItem {
   lon: string;
@@ -21,10 +26,11 @@ export const LocationSign: LocationSignType = async (args): Promise<string> => {
   if ('address' in args) {
     // 单个位置直接签
     const { name, address, activeId, lat, lon, fid, ...cookies } = args;
-    const url = `${PPTSIGN.URL}?name=${name}&address=${address}&activeId=${activeId}&uid=${cookies._uid}&clientip=&latitude=${lat}&longitude=${lon}&fid=${fid}&appType=15&ifTiJiao=1`;
+    const url = `${PPTSIGN.URL}?name=${name}&address=${address}&activeId=${activeId}&uid=${cookies._uid}&clientip=&useragent=${encodeURIComponent(getMobileUA())}&latitude=${lat}&longitude=${lon}&fid=${fid}&appType=15&ifTiJiao=1`;
     const result = await request(url, {
       headers: {
         Cookie: cookieSerialize(cookies),
+        ...(getMobileUA() ? { 'User-Agent': getMobileUA() } : {}),
       },
     });
     msg = result.data === 'success' ? '[位置]签到成功' : `[位置]${result.data}`;

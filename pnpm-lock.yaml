@@ -113,6 +113,9 @@ importers:
       crypto-js:
         specifier: workspace:*
         version: link:../../packages/crypto-js
+      leaflet:
+        specifier: ^1.9.4
+        version: 1.9.4
       react:
         specifier: ^18.2.0
         version: 18.2.0
@@ -123,6 +126,9 @@ importers:
         specifier: 6.3.0
         version: 6.3.0(react-dom@18.2.0)(react@18.2.0)
     devDependencies:
+      '@types/leaflet':
+        specifier: ^1.9.22
+        version: 1.9.22
       '@types/react':
         specifier: ^18.0.15
         version: 18.0.28
@@ -994,6 +1000,10 @@ packages:
       '@types/serve-static': 1.15.1
     dev: true
 
+  /@types/geojson@7946.0.16:
+    resolution: {integrity: sha512-6C8nqWur3j98U6+lXDfTUWIfgvZU+EumvpHKcYjujKH7woYyLj2sUmff0tRhrqM7BohUw7Pz3ZB1jj2gW9Fvmg==}
+    dev: true
+
   /@types/http-assert@1.5.3:
     resolution: {integrity: sha512-FyAOrDuQmBi8/or3ns4rwPno7/9tJTijVW6aQQjK02+kOQ8zmoNg2XJtAuQhvQcy1ASJq38wirX5//9J1EqoUA==}
     dev: true
@@ -1047,6 +1057,12 @@ packages:
     resolution: {integrity: sha512-WXgKWpBsbS14kzmzD9LeFapOIa678h7zvUHxDwXwSx4ETKXhXLVUAToX6jZ/U7EihM7qwyD9W/BZvB0MRu7MTQ==}
     dependencies:
       '@types/koa': 2.13.5
+    dev: true
+
+  /@types/leaflet@1.9.22:
+    resolution: {integrity: sha512-h3lhECYEKDasG7LFHu+GiHqAvsgLuQvlJvVZzJDGONo3sEL+wUOqSFLnwkZlK0qVxnxbuGFW8iBlJNYs5wgndA==}
+    dependencies:
+      '@types/geojson': 7946.0.16
     dev: true
 
   /@types/mime@3.0.1:
@@ -2875,6 +2891,10 @@ packages:
 
   /kolorist@1.7.0:
     resolution: {integrity: sha512-ymToLHqL02udwVdbkowNpzjFd6UzozMtshPQKVi5k1EjKRqKqBrOnE9QbLEb0/pV76SAiIT13hdL8R6suc+f3g==}
+    dev: false
+
+  /leaflet@1.9.4:
+    resolution: {integrity: sha512-nxS1ynzJOmOlHp+iL3FyWqK89GtNL8U8rvlMOsQdTTssxZwCXh8N2NB3GDQOL+YR3XnWyZAxwQixURb+FA74PA==}
     dev: false
 
   /levn@0.3.0:

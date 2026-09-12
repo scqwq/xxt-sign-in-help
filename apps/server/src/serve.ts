@@ -65,7 +65,6 @@ router.post('/login', async (ctx) => {
 router.post('/activity', async (ctx) => {
   const { uid, _d, vc3, uf } = ctx.request.body as any;
   const courses = await getCourses(uid, _d, vc3);
-  // 身份凭证过期
   if (typeof courses === 'string') {
     ctx.body = courses;
     return;
@@ -92,6 +91,18 @@ router.post('/activity', async (ctx) => {
   });
   console.log(uid);
   ctx.body = activity;
+});
+
+// 获取活动详情（可能包含教师设定的签到位置等）
+router.get('/activity-info/:phone/:activeId', async (ctx) => {
+  const user = dbGetUser(ctx.params.phone);
+  if (!user || !user.params || !user.params._uid) { ctx.body = { success: false, msg: '用户凭证不存在' }; return; }
+  try {
+    const info = await getPPTActiveInfo({ activeId: ctx.params.activeId, ...user.params });
+    ctx.body = { success: true, info };
+  } catch (e: any) {
+    ctx.body = { success: false, msg: `获取活动详情失败：${e?.message || e}` };
+  }
 });
 
 router.post('/qrcode', async (ctx) => {
@@ -574,20 +585,30 @@ app.use(async (ctx, next) => {
 });
 app.use(router.routes());
 
-// Ctrl + C 终止程序
+// Ctrl + C 终止程序 — 处理所有可能的退出信号
 let serverShuttingDown = false;
 const shutdownServer = () => {
   if (serverShuttingDown) return;
   serverShuttingDown = true;
+  // 先恢复终端（同步执行，确保在进程退出前完成）
   restoreTerminal();
+  // 强制杀死所有子进程
   processMap.forEach((pcs) => {
-    if (!pcs.killed) pcs.kill('SIGTERM');
+    try {
+      if (!pcs.killed) {
+        pcs.kill('SIGKILL');
+      }
+    } catch { /* */ }
   });
-  setTimeout(() => process.exit(0), 300);
+  // 立即退出，不等待
+  process.exit(0);
 };
 
+// 注册所有可能的退出信号
 process.once('SIGINT', shutdownServer);
 process.once('SIGTERM', shutdownServer);
+process.once('SIGHUP', shutdownServer);
+process.once('SIGBREAK', shutdownServer);
 process.once('exit', restoreTerminal);
 
 // 若在服务器，直接运行
