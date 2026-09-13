@@ -202,7 +202,7 @@ TENCENT_SECRET_KEY=
 1. `getPanToken` 获取云盘 token
 2. `uploadPhoto` 上传图片到 `pan-yz.chaoxing.com` 获取 `objectId`（带手机端 UA）
 3. `PhotoSign` 调 `mobilelearn.chaoxing.com/pptSign/stuSignajax` 完成签到（带手机端 UA）
-4. 或: 直接用云盘已有图片的 `objectId` 签到 (跳过上传，点"使用云盘图片签到")
+4. 或: 直接用云盘已有图片的 `objectId` 签到（跳过上传，点"使用云盘图片签到"）。可在输入框指定云盘图片编号（默认 `0`，即查找 `0.jpg`/`0.png`），后端通过 `GET /pan-photos/:phone?name=<编号>` 查询对应 `{编号}.jpg`/`{编号}.png`。
 
 ### 位置签到流程
 
@@ -231,8 +231,12 @@ TENCENT_SECRET_KEY=
 | DELETE | `/courses/:phone/:courseId` | 删除课程记录 |
 | POST | `/monitor/sign/:phone` | 手动签到统一入口 (支持 multipart 图片 / objectId 云盘图片) |
 | POST | `/upload-pan/:phone` | 上传图片到云盘 |
-| GET  | `/pan-photos/:phone` | 查询云盘图片 objectId |
+| GET  | `/pan-photos/:phone` | 查询云盘图片 objectId，可选 `?name=` 指定图片编号（默认 `0`） |
 | GET  | `/activity-info/:phone/:activeId` | 获取活动详情 (含签到类型、是否需拍照等) |
+
+## 课程记录部分更新
+
+`POST /courses/:phone` 支持只传部分字段（如仅传 `autoSign` 或仅传 `photoPath`），后端会先读取已有记录并合并后再写入，未传入的字段保持原值不变，不会被覆盖为空值。
 
 ## 注意事项
 
@@ -263,4 +267,5 @@ one（不转换） | d09 |
 
 - 手动签到后，RightPanel 通过 manualResults 本地状态立即更新任务流显示（✅/❌）
 - 签到成功后，按 successAutoHide 秒数自动将条目加入 hiddenIds 隐藏
+- 首次签到失败后再次签到成功时，同样会转为 ✅ 并按 successAutoHide 自动隐藏；auto-hide timer 通过 useRef 按活动 ID 管理，避免陈旧 timer 干扰重试
 - 坐标转换工具：pps/web/src/utils/gcoord.ts（GCJ-02 ↔ WGS-84 ↔ BD-09）

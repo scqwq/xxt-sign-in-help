@@ -110,12 +110,14 @@ export const dbGetUserCourses = (phone: string): { courseId: string; courseName:
 
 /** 新增或更新单门课程记录。 */
 export const dbUpsertCourse = (phone: string, course: { courseId: string; courseName?: string; autoSign?: boolean; photoPath?: string }) => {
+  const courseId = String(course.courseId);
+  const existing = dbGetUserCourses(phone).find(c => c.courseId === courseId);
   upsertCourseStmt.run({
     phone,
-    courseId: String(course.courseId),
-    courseName: course.courseName || '',
-    autoSign: course.autoSign ? 1 : 0,
-    photoPath: course.photoPath || '',
+    courseId,
+    courseName: course.courseName ?? existing?.courseName ?? '',
+    autoSign: (course.autoSign ?? existing?.autoSign ?? false) ? 1 : 0,
+    photoPath: course.photoPath ?? existing?.photoPath ?? '',
   });
 };
 

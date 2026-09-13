@@ -4,7 +4,7 @@ import Button from '@mui/material/Button';
 import ButtonBase from '@mui/material/ButtonBase';
 import CircularProgress from '@mui/material/CircularProgress';
 import Snackbar from '@mui/material/Snackbar';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getPanPhoto, manualPhotoSign, manualSign, saveCourse, signWithPanPhoto } from './Helper';
 import MapPicker from './MapPicker';
 
@@ -45,15 +45,33 @@ export default function RightPanel({ phone, monitorEvents, onAlert, onCourseReco
   const [manualResults, setManualResults] = useState<{ [key: string]: { success: boolean; resultText: string } }>({});
   // 自动隐藏的 activeId 集合
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
+  // 云盘图片编号（每个活动独立）
+  const [panPhotoName, setPanPhotoName] = useState<{ [activeId: string]: string }>({});
+  // 自动隐藏 timer 管理（防止重复设置 / 陈旧 timer 干扰重试成功后的隐藏）
+  const hideTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+
+  useEffect(() => {
+    return () => {
+      hideTimersRef.current.forEach(timer => clearTimeout(timer));
+      hideTimersRef.current.clear();
+    };
+  }, []);
 
   const setManualResult = (activeId: string, success: boolean, resultText: string) => {
+    const existingTimer = hideTimersRef.current.get(activeId);
+    if (existingTimer) {
+      clearTimeout(existingTimer);
+      hideTimersRef.current.delete(activeId);
+    }
     setManualResults(prev => ({ ...prev, [activeId]: { success, resultText } }));
     if (success) {
       const autoHide = loadSuccessAutoHide();
       if (autoHide > 0) {
-        setTimeout(() => {
+        const timer = setTimeout(() => {
+          hideTimersRef.current.delete(activeId);
           setHiddenIds(prev => new Set([...prev, activeId]));
         }, autoHide * 1000);
+        hideTimersRef.current.set(activeId, timer);
       }
     }
   };
@@ -214,13 +232,14 @@ export default function RightPanel({ phone, monitorEvents, onAlert, onCourseReco
     }
   };
 
-  const handlePanPhotoSign = async (ev: any) => {
+  const handlePanPhotoSign = async (ev: any, photoName?: string) => {
     const activeId = ev.activeId;
     setBusy(prev => ({ ...prev, [activeId]: true }));
     try {
-      const panRes = await getPanPhoto(phone);
+      const panRes = await getPanPhoto(phone, photoName);
       if (!panRes?.success || !panRes?.objectId) {
-        onAlert(panRes?.msg || '云盘中未找到 0.jpg/0.png，请先在左侧上传图片到云盘', 'warning');
+        const name = photoName || '0';
+        onAlert(panRes?.msg || `云盘中未找到 ${name}.jpg/${name}.png，请先在左侧上传图片到云盘`, 'warning');
         setBusy(prev => ({ ...prev, [activeId]: false }));
         return;
       }
@@ -333,12 +352,19 @@ export default function RightPanel({ phone, monitorEvents, onAlert, onCourseReco
                       >
                         {isBusy ? <CircularProgress size={14} /> : '选择本地图片签到'}
                       </Button>
+                      <input
+                        className='input-area'
+                        placeholder='云盘图片编号（默认 0，查找 0.jpg/0.png）'
+                        value={panPhotoName[activeId] || ''}
+                        onChange={(e) => setPanPhotoName(prev => ({ ...prev, [activeId]: e.target.value }))}
+                        style={{ marginBottom: 6 }}
+                      />
                       <Button
                         size='small'
                         variant='outlined'
                         fullWidth
                         disabled={isBusy}
-                        onClick={() => handlePanPhotoSign(ev)}
+                        onClick={() => handlePanPhotoSign(ev, panPhotoName[activeId] || '0')}
                         style={{ borderRadius: 8 }}
                       >
                         使用云盘图片签到

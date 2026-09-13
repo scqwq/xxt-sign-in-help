@@ -1,5 +1,6 @@
 import { randomBytes } from 'crypto';
 import fs from 'fs';
+import { red } from 'kolorist';
 import { tmpdir } from 'os';
 import path from 'path';
 import { CHAT_GROUP, PANCHAOXING, PANLIST, PANUPLOAD, PPTSIGN } from '../configs/api';
@@ -44,7 +45,7 @@ export const PhotoSign_2 = async (args: BasicCookie & { objectId: string; active
 };
 
 // 在Termux或其他终端中使用，从云盘获取图片
-export const getObjectIdFromcxPan = async (cookies: BasicCookie) => {
+export const getObjectIdFromcxPan = async (cookies: BasicCookie, photoName: string = '0') => {
   // 获得 parentId, enc
   const result = await request(PANCHAOXING.URL, {
     headers: {
@@ -68,14 +69,18 @@ export const getObjectIdFromcxPan = async (cookies: BasicCookie) => {
     },
     `puid=0&shareid=0&parentId=${parentId}&page=1&size=50&enc=${enc}`
   );
-  const objectList = JSON.parse(result_panlist.data).list;
+  const objectList = JSON.parse(result_panlist.data)?.list;
+  if (!Array.isArray(objectList)) {
+    console.log(red(`云盘文件列表返回格式异常，无法查找 ${photoName}.jpg/${photoName}.png`));
+    return null;
+  }
   for (let i = 0; i < objectList.length; i++) {
-    if (objectList[i].name === '0.jpg' || objectList[i].name === '0.png') {
+    if (objectList[i].name === `${photoName}.jpg` || objectList[i].name === `${photoName}.png`) {
       return objectList[i].objectId as string;
     }
   }
 
-  console.log('未查询到符合要求的图片，请去网盘检查检查！');
+  console.log(`未查询到 ${photoName}.jpg 或 ${photoName}.png，请去网盘检查！`);
   return null;
 };
 

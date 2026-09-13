@@ -89,6 +89,8 @@ async function getPhotoObjectId(cookies: BasicCookie, coursePhotoPath?: string):
     } catch (e: any) {
       console.log(red(`[拍照]本地图片上传失败：${e?.message || e}，尝试云盘兜底`));
     }
+  } else if (coursePhotoPath) {
+    console.log(red(`[拍照]本地图片路径不存在：${localPath}，尝试云盘兜底`));
   }
   // 兜底：从云盘找 0.jpg/0.png
   return getObjectIdFromcxPan(cookies);

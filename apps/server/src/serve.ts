@@ -476,11 +476,12 @@ router.get('/pan-photos/:phone', async (ctx) => {
   if (!user || !user.params || !user.params._uid) { ctx.body = { success: false, msg: '用户凭证不存在，请重新登录' }; return; }
   const cookies = { ...user.params } as any;
   try {
-    const objectId = await getObjectIdFromcxPan(cookies);
+    const photoName = (ctx.query.name as string) || '0';
+    const objectId = await getObjectIdFromcxPan(cookies, photoName);
     if (objectId) {
-      ctx.body = { success: true, objectId, msg: '找到云盘图片 0.jpg/0.png' };
+      ctx.body = { success: true, objectId, msg: `找到云盘图片 ${photoName}.jpg/${photoName}.png` };
     } else {
-      ctx.body = { success: false, msg: '云盘中未找到 0.jpg 或 0.png，请先上传' };
+      ctx.body = { success: false, msg: `云盘中未找到 ${photoName}.jpg 或 ${photoName}.png，请先上传` };
     }
   } catch (e: any) {
     ctx.body = { success: false, msg: `查询云盘失败：${e?.message || e}` };

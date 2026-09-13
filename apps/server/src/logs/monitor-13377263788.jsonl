@@ -334,3 +334,96 @@
 {"time":"2026-09-12T07:18:57.297Z","type":"manual_sign_request","payload":{"activeId":8000175124665,"otherId":4,"courseId":"266906839","hasPhoto":false}}
 {"time":"2026-09-12T07:18:57.578Z","type":"manual_sign_result","payload":{"activeId":8000175124665,"result":"[位置]您已签到过了","success":false}}
 {"time":"2026-09-12T07:19:14.123Z","type":"poll_shutdown","payload":{"reason":"signal"}}
+{"time":"2026-09-13T04:46:58.440Z","type":"start_request","payload":{"contentType":"application/json","rawBodyType":"string","parsedBodyType":"object","bodyKeys":["payload"]}}
+{"time":"2026-09-13T04:46:58.444Z","type":"fork_prepare","payload":{"script":"D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\poll.ts","exists":true,"isTypeScript":true,"payloadLength":1448,"execPath":"D:\\moresoftware\\nodejs\\node.exe"}}
+{"time":"2026-09-13T04:46:58.487Z","type":"child_process_forked","payload":{"pid":48124}}
+{"time":"2026-09-13T04:47:02.487Z","type":"child_stderr","payload":"ϵͳ�Ҳ���ָ����·����\r\n"}
+{"time":"2026-09-13T04:47:02.495Z","type":"child_stdout","payload":"\u001b[0m\u001b[?25h\u001b[?1l\u001b[2J\u001b[H"}
+{"time":"2026-09-13T04:47:02.499Z","type":"poll_startup","payload":{"mode":"web","pollInterval":30}}
+{"time":"2026-09-13T04:47:02.811Z","type":"poll_ready","payload":{"realname":"零梁志"}}
+{"time":"2026-09-13T04:47:02.815Z","type":"child_stdout","payload":"[轮询监听中] 每 30 秒检查一次课程签到活动...\n"}
+{"time":"2026-09-13T04:49:08.549Z","type":"child_stdout","payload":"检测到活动：普通签到\n"}
+{"time":"2026-09-13T04:49:08.648Z","type":"poll_activity_detected","payload":{"activeId":8000175173832,"name":"普通签到","courseId":"266906839","courseName":"266906839","signType":"拍照签到","shouldAutoSign":true}}
+{"time":"2026-09-13T04:49:08.654Z","type":"child_stdout","payload":"[检测到签到] 266906839 - 拍照签到 (自动)\n"}
+{"time":"2026-09-13T04:49:08.801Z","type":"child_stdout","payload":"[预签]已请求\n"}
+{"time":"2026-09-13T04:49:08.922Z","type":"child_stdout","payload":"analysis 请求结果：success\n"}
+{"time":"2026-09-13T04:49:09.852Z","type":"poll_sign_result","payload":{"activeId":8000175173832,"signType":"拍照签到","result":"[异常]Cannot read properties of undefined (reading 'length')"}}
+{"time":"2026-09-13T04:49:09.859Z","type":"child_stdout","payload":"[签到结果] [异常]Cannot read properties of undefined (reading 'length') - 零梁志\n"}
+{"time":"2026-09-13T04:49:35.268Z","type":"manual_sign_request","payload":{"activeId":"8000175173832","otherId":0,"courseId":"266906839","hasPhoto":true}}
+{"time":"2026-09-13T04:49:37.911Z","type":"manual_sign_result","payload":{"activeId":"8000175173832","result":"[拍照]签到成功","success":true}}
+{"time":"2026-09-13T04:49:41.195Z","type":"child_stdout","payload":"检测到活动：普通签到\n"}
+{"time":"2026-09-13T04:50:12.338Z","type":"child_stdout","payload":"检测到活动：普通签到\n"}
+{"time":"2026-09-13T04:50:36.286Z","type":"poll_shutdown","payload":{"reason":"signal"}}
+{"time":"2026-09-13T05:17:55.948Z","type":"start_request","payload":{"contentType":"application/json","rawBodyType":"string","parsedBodyType":"object","bodyKeys":["payload"]}}
+{"time":"2026-09-13T05:17:55.951Z","type":"fork_prepare","payload":{"script":"D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\poll.ts","exists":true,"isTypeScript":true,"payloadLength":1448,"execPath":"D:\\moresoftware\\nodejs\\node.exe"}}
+{"time":"2026-09-13T05:17:55.992Z","type":"child_process_forked","payload":{"pid":51464}}
+{"time":"2026-09-13T05:17:57.918Z","type":"child_stderr","payload":"ϵͳ�Ҳ���ָ����·����\r\n"}
+{"time":"2026-09-13T05:17:57.925Z","type":"child_stdout","payload":"\u001b[0m\u001b[?25h\u001b[?1l\u001b[2J\u001b[H"}
+{"time":"2026-09-13T05:17:57.928Z","type":"poll_startup","payload":{"mode":"web","pollInterval":30}}
+{"time":"2026-09-13T05:17:58.271Z","type":"poll_ready","payload":{"realname":"零梁志"}}
+{"time":"2026-09-13T05:17:58.274Z","type":"child_stdout","payload":"[轮询监听中] 每 30 秒检查一次课程签到活动...\n"}
+{"time":"2026-09-13T05:17:58.743Z","type":"child_stdout","payload":"检测到活动：普通签到\n"}
+{"time":"2026-09-13T05:17:58.846Z","type":"poll_activity_detected","payload":{"activeId":8000175173832,"name":"普通签到","courseId":"266906839","courseName":"266906839","signType":"拍照签到","shouldAutoSign":true}}
+{"time":"2026-09-13T05:17:58.849Z","type":"child_stdout","payload":"[检测到签到] 266906839 - 拍照签到 (自动)\n"}
+{"time":"2026-09-13T05:17:58.983Z","type":"child_stdout","payload":"[预签]已请求\n"}
+{"time":"2026-09-13T05:17:59.108Z","type":"child_stdout","payload":"analysis 请求结果：success\n"}
+{"time":"2026-09-13T05:17:59.683Z","type":"child_stdout","payload":"[拍照]本地图片路径不存在：C:\\Users\\56955\\Pictures\\Screenshots\\屏幕截图 2026-05-06 161403，尝试云盘兜底\n"}
+{"time":"2026-09-13T05:18:00.054Z","type":"poll_sign_result","payload":{"activeId":8000175173832,"signType":"拍照签到","result":"[拍照]未找到可用图片（本地路径无效且云盘无 0.jpg/0.png）"}}
+{"time":"2026-09-13T05:18:00.054Z","type":"child_stdout","payload":"云盘文件列表返回格式异常，无法查找 0.jpg/0.png\n"}
+{"time":"2026-09-13T05:18:00.058Z","type":"child_stdout","payload":"[签到结果] [拍照]未找到可用图片（本地路径无效且云盘无 0.jpg/0.png） - 零梁志\n"}
+{"time":"2026-09-13T05:18:31.584Z","type":"child_stdout","payload":"检测到活动：普通签到\n"}
+{"time":"2026-09-13T05:18:41.709Z","type":"child_process_exit","payload":{"code":null,"signal":"SIGKILL","pid":51464}}
+{"time":"2026-09-13T05:18:42.705Z","type":"start_request","payload":{"contentType":"application/json","rawBodyType":"string","parsedBodyType":"object","bodyKeys":["payload"]}}
+{"time":"2026-09-13T05:18:42.708Z","type":"fork_prepare","payload":{"script":"D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\poll.ts","exists":true,"isTypeScript":true,"payloadLength":1448,"execPath":"D:\\moresoftware\\nodejs\\node.exe"}}
+{"time":"2026-09-13T05:18:42.732Z","type":"child_process_forked","payload":{"pid":51784}}
+{"time":"2026-09-13T05:18:44.658Z","type":"child_stderr","payload":"ϵͳ�Ҳ���ָ����·����\r\n"}
+{"time":"2026-09-13T05:18:44.665Z","type":"child_stdout","payload":"\u001b[0m\u001b[?25h\u001b[?1l\u001b[2J\u001b[H"}
+{"time":"2026-09-13T05:18:44.669Z","type":"poll_startup","payload":{"mode":"web","pollInterval":30}}
+{"time":"2026-09-13T05:18:44.947Z","type":"poll_ready","payload":{"realname":"零梁志"}}
+{"time":"2026-09-13T05:18:44.950Z","type":"child_stdout","payload":"[轮询监听中] 每 30 秒检查一次课程签到活动...\n"}
+{"time":"2026-09-13T05:18:45.382Z","type":"child_stdout","payload":"检测到活动：普通签到\n"}
+{"time":"2026-09-13T05:18:45.455Z","type":"poll_activity_detected","payload":{"activeId":8000175173832,"name":"普通签到","courseId":"266906839","courseName":"266906839","signType":"拍照签到","shouldAutoSign":true}}
+{"time":"2026-09-13T05:18:45.457Z","type":"child_stdout","payload":"[检测到签到] 266906839 - 拍照签到 (自动)\n"}
+{"time":"2026-09-13T05:18:45.557Z","type":"child_stdout","payload":"[预签]已请求\n"}
+{"time":"2026-09-13T05:18:45.686Z","type":"child_stdout","payload":"analysis 请求结果：success\n"}
+{"time":"2026-09-13T05:18:46.592Z","type":"child_stderr","payload":"(node:51784) [DEP0044] DeprecationWarning: The `util.isArray` API is deprecated. Please use `Array.isArray()` instead.\n(Use `node --trace-deprecation ...` to show where the warning was created)\n"}
+{"time":"2026-09-13T05:18:46.766Z","type":"child_stdout","payload":"[拍照]已上传本地图片 C:\\Users\\56955\\Pictures\\Screenshots\\屏幕截图 2026-05-06 161403.png，objectId=d594d583bf1dc0c0068525722a054dc8\n"}
+{"time":"2026-09-13T05:18:46.879Z","type":"poll_sign_result","payload":{"activeId":8000175173832,"signType":"拍照签到","result":"[拍照]您已签到过了"}}
+{"time":"2026-09-13T05:18:46.879Z","type":"child_stdout","payload":"[拍照]您已签到过了\n"}
+{"time":"2026-09-13T05:18:46.882Z","type":"child_stdout","payload":"[签到结果] [拍照]您已签到过了 - 零梁志\n"}
+{"time":"2026-09-13T05:19:18.069Z","type":"child_stdout","payload":"检测到活动：普通签到\n"}
+{"time":"2026-09-13T05:19:49.418Z","type":"child_stdout","payload":"检测到活动：普通签到\n"}
+{"time":"2026-09-13T05:20:20.725Z","type":"child_stdout","payload":"检测到活动：普通签到\n"}
+{"time":"2026-09-13T05:20:52.038Z","type":"child_stdout","payload":"检测到活动：普通签到\n"}
+{"time":"2026-09-13T05:21:23.130Z","type":"child_stdout","payload":"检测到活动：普通签到\n"}
+{"time":"2026-09-13T05:21:54.644Z","type":"child_stdout","payload":"检测到活动：普通签到\n"}
+{"time":"2026-09-13T05:21:54.717Z","type":"poll_activity_detected","payload":{"activeId":8000175175348,"name":"普通签到","courseId":"266906839","courseName":"266906839","signType":"拍照签到","shouldAutoSign":true}}
+{"time":"2026-09-13T05:21:54.720Z","type":"child_stdout","payload":"[检测到签到] 266906839 - 拍照签到 (自动)\n"}
+{"time":"2026-09-13T05:21:54.886Z","type":"child_stdout","payload":"[预签]已请求\n"}
+{"time":"2026-09-13T05:21:55.013Z","type":"child_stdout","payload":"analysis 请求结果：success\n"}
+{"time":"2026-09-13T05:21:55.952Z","type":"child_stdout","payload":"[拍照]已上传本地图片 C:\\Users\\56955\\Pictures\\Screenshots\\屏幕截图 2026-05-06 161403.png，objectId=d594d583bf1dc0c0068525722a054dc8\n"}
+{"time":"2026-09-13T05:21:56.040Z","type":"poll_sign_result","payload":{"activeId":8000175175348,"signType":"拍照签到","result":"[拍照]签到成功"}}
+{"time":"2026-09-13T05:21:56.041Z","type":"child_stdout","payload":"[拍照]签到成功\n"}
+{"time":"2026-09-13T05:21:56.044Z","type":"child_stdout","payload":"[签到结果] [拍照]签到成功 - 零梁志\n"}
+{"time":"2026-09-13T05:22:04.835Z","type":"poll_shutdown","payload":{"reason":"signal"}}
+{"time":"2026-09-13T06:06:18.513Z","type":"start_request","payload":{"contentType":"application/json","rawBodyType":"string","parsedBodyType":"object","bodyKeys":["payload"]}}
+{"time":"2026-09-13T06:06:18.516Z","type":"fork_prepare","payload":{"script":"D:\\moresoftware\\xxt_pic\\chaoxing-signin\\apps\\server\\src\\poll.ts","exists":true,"isTypeScript":true,"payloadLength":1448,"execPath":"D:\\moresoftware\\nodejs\\node.exe"}}
+{"time":"2026-09-13T06:06:18.559Z","type":"child_process_forked","payload":{"pid":55164}}
+{"time":"2026-09-13T06:06:20.643Z","type":"child_stderr","payload":"ϵͳ�Ҳ���ָ����·����\r\n"}
+{"time":"2026-09-13T06:06:20.648Z","type":"child_stdout","payload":"\u001b[0m\u001b[?25h\u001b[?1l\u001b[2J\u001b[H"}
+{"time":"2026-09-13T06:06:20.651Z","type":"poll_startup","payload":{"mode":"web","pollInterval":30}}
+{"time":"2026-09-13T06:06:20.975Z","type":"poll_ready","payload":{"realname":"零梁志"}}
+{"time":"2026-09-13T06:06:20.978Z","type":"child_stdout","payload":"[轮询监听中] 每 30 秒检查一次课程签到活动...\n"}
+{"time":"2026-09-13T06:06:21.582Z","type":"child_stdout","payload":"检测到活动：普通签到\n"}
+{"time":"2026-09-13T06:06:21.646Z","type":"poll_activity_detected","payload":{"activeId":8000175175348,"name":"普通签到","courseId":"266906839","courseName":"266906839","signType":"拍照签到","shouldAutoSign":true}}
+{"time":"2026-09-13T06:06:21.649Z","type":"child_stdout","payload":"[检测到签到] 266906839 - 拍照签到 (自动)\n"}
+{"time":"2026-09-13T06:06:21.785Z","type":"child_stdout","payload":"[预签]已请求\n"}
+{"time":"2026-09-13T06:06:21.905Z","type":"child_stdout","payload":"analysis 请求结果：success\n"}
+{"time":"2026-09-13T06:06:23.234Z","type":"child_stderr","payload":"(node:55164) [DEP0044] DeprecationWarning: The `util.isArray` API is deprecated. Please use `Array.isArray()` instead.\n(Use `node --trace-deprecation ...` to show where the warning was created)\n"}
+{"time":"2026-09-13T06:06:23.385Z","type":"child_stdout","payload":"[拍照]已上传本地图片 C:\\Users\\56955\\Pictures\\Screenshots\\屏幕截图 2026-05-06 161403.png，objectId=d594d583bf1dc0c0068525722a054dc8\n"}
+{"time":"2026-09-13T06:06:23.467Z","type":"child_stdout","payload":"[拍照]您已签到过了\n"}
+{"time":"2026-09-13T06:06:23.467Z","type":"poll_sign_result","payload":{"activeId":8000175175348,"signType":"拍照签到","result":"[拍照]您已签到过了"}}
+{"time":"2026-09-13T06:06:23.472Z","type":"child_stdout","payload":"[签到结果] [拍照]您已签到过了 - 零梁志\n"}
+{"time":"2026-09-13T06:06:55.179Z","type":"child_stdout","payload":"检测到活动：普通签到\n"}
+{"time":"2026-09-13T06:07:26.308Z","type":"child_stdout","payload":"检测到活动：普通签到\n"}
+{"time":"2026-09-13T06:07:29.384Z","type":"poll_shutdown","payload":{"reason":"signal"}}

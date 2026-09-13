@@ -198,8 +198,9 @@ export const uploadToPan = async (phone: string, photoFile: File) => {
 };
 
 // 查询云盘中的图片（0.jpg/0.png），返回 objectId
-export const getPanPhoto = async (phone: string) => {
-  return await Fetch(`${pan_photos_api}/${phone}`, { type: 'json' });
+export const getPanPhoto = async (phone: string, photoName?: string) => {
+  const query = photoName ? `?name=${encodeURIComponent(photoName)}` : '';
+  return await Fetch(`${pan_photos_api}/${phone}${query}`, { type: 'json' });
 };
 
 // 使用云盘图片 objectId 进行拍照签到
