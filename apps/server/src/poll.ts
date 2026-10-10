@@ -175,8 +175,9 @@ process.on('unhandledRejection', (reason) => {
     params._uid = auth_config.credentials.uid;
     params.lv = auth_config.credentials.lv;
     params.fid = auth_config.credentials.fid;
-    config.monitor = { ...auth_config.config.monitor };
-    config.mailing = { ...auth_config.config.mailing };
+    config.monitor = { ...(auth_config.config?.monitor || {}) };
+    config.mailing = { ...(auth_config.config?.mailing || {}) };
+    if (!Array.isArray(config.monitor.presetAddress)) config.monitor.presetAddress = [];
     writeMonitorLog(params.phone, 'poll_startup', { mode: 'web', pollInterval: loadMonitorConfig().pollInterval });
   } else {
     const userItem = (await prompts({ type: 'select', name: 'userItem', message: '选择用户', choices: getLocalUsers(), initial: 0 }, PromptsOptions)).userItem;

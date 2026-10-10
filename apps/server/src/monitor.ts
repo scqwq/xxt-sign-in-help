@@ -325,9 +325,10 @@ process.on('unhandledRejection', (reason) => {
     params._uid = auth_config.credentials.uid;
     params.lv = auth_config.credentials.lv;
     params.fid = auth_config.credentials.fid;
-    config.monitor = { ...auth_config.config.monitor };
-    config.mailing = { ...auth_config.config.mailing };
-    config.cqserver = { ...auth_config.config.cqserver };
+    config.monitor = { ...(auth_config.config?.monitor || {}) };
+    config.mailing = { ...(auth_config.config?.mailing || {}) };
+    config.cqserver = { ...(auth_config.config?.cqserver || {}) };
+    if (!Array.isArray(config.monitor.presetAddress)) config.monitor.presetAddress = [];
     writeMonitorLog(params.phone, 'startup', { mode: 'web', config: config.monitor });
   } else {
     // 打印本地用户列表，并返回用户数量

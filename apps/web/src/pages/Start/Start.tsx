@@ -7,7 +7,7 @@ import Dialog from '@mui/material/Dialog';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import UserCard from '../../components/UserCard/UserCard';
-import { login_api, monitor_status_api } from '../../config/api';
+import { login_api, monitor_status_api, users_api } from '../../config/api';
 import styles from './Start.module.css';
 import { RenderConfig, RenderLogin } from './ConfigDialog';
 
@@ -149,27 +149,55 @@ function Start() {
     request.onsuccess = () => {
       console.log('数据库打开成功');
       setIndb(request.result);
+      const db = request.result;
+      const localUsers: UserParamsType[] = [];
       // 遍历全部数据
-      const cursor_request = request.result.transaction('user', 'readwrite').objectStore('user').openCursor();
+      const cursor_request = db.transaction('user', 'readonly').objectStore('user').openCursor();
       cursor_request.onsuccess = () => {
         const cursor = cursor_request.result;
         if (cursor) {
           // console.log(cursor.key)
           // console.log(cursor.value)
           const userValue = cursor.value; // 在safari中需要将参数值存到变量，再传给setState不然undefined
-          setUser((prev) => {
-            return [...prev, userValue];
-          });
+          localUsers.push(userValue);
           cursor.continue();
         } else {
-          setLoaded(true);
+          Fetch(users_api).then((remoteUsers: UserParamsType[]) => {
+            const localByPhone = new Map(localUsers.map((item) => [item.phone, item]));
+            const mergedUsers = remoteUsers.map((remoteUser) => {
+              const localUser = localByPhone.get(remoteUser.phone);
+              return {
+                ...localUser,
+                ...remoteUser,
+                password: localUser?.password || remoteUser.password,
+                date: localUser?.date || new Date(),
+                monitor: localUser?.monitor ?? false,
+                config: localUser?.config || remoteUser.config,
+              };
+            });
+            const remotePhones = new Set(remoteUsers.map((item) => item.phone));
+            const users = [...mergedUsers, ...localUsers.filter((item) => !remotePhones.has(item.phone))];
+            const transaction = db.transaction('user', 'readwrite');
+            users.forEach((item) => transaction.objectStore('user').put(item));
+            transaction.oncomplete = () => {
+              setUser(users);
+              setLoaded(true);
+            };
+            transaction.onerror = () => {
+              setUser(users);
+              setLoaded(true);
+            };
+          }).catch(() => {
+            setUser(localUsers);
+            setLoaded(true);
+          });
         }
       };
     };
     // 是否创建数据表
     request.onupgradeneeded = () => {
       const db = request.result;
-      if (!db.objectStoreNames.contains('ui')) {
+      if (!db.objectStoreNames.contains('user')) {
         db.createObjectStore('user', { keyPath: 'phone' });
         console.log('数据表已创建');
       }

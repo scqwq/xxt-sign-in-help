@@ -14,7 +14,7 @@ import { QRCodeSign } from './functions/qrcode';
 import { QrCodeScan } from './functions/tencent.qrcode';
 import { getAccountInfo, getCourses, getPanToken, userLogin } from './functions/user';
 import { storeUser } from './utils/file';
-import { dbGetUser, dbGetUserCourses, dbUpsertCourse, dbDeleteCourse } from './utils/db';
+import { dbGetUser, dbGetAllUsers, dbGetUserCourses, dbUpsertCourse, dbDeleteCourse } from './utils/db';
 import { delay } from './utils/helper';
 import { writeMonitorLog } from './utils/monitorLogger';
 import { restoreTerminal } from './utils/terminal';
@@ -46,6 +46,18 @@ const appendMonitorEvent = (phone: string, event: any) => {
 
 router.get('/', async (ctx) => {
   ctx.body = '<h1 style="text-align: center">Welcome, chaoxing-sign-cli API service is running.</h1>';
+});
+
+router.get('/users', async (ctx) => {
+  ctx.body = dbGetAllUsers().map((user) => ({
+    phone: user.phone,
+    ...user.params,
+    config: {
+      monitor: user.monitor,
+      mailing: user.mailing,
+      cqserver: user.cqserver,
+    },
+  }));
 });
 
 router.post('/login', async (ctx) => {

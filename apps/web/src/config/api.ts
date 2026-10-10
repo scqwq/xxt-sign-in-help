@@ -3,6 +3,8 @@ const baseUrl = import.meta.env.VITE_API_URL || `http://${window.location.hostna
 
 export const login_api = baseUrl + '/login';
 
+export const users_api = baseUrl + '/users';
+
 export const activity_api = baseUrl + '/activity';
 
 export const activity_info_api = baseUrl + '/activity-info';

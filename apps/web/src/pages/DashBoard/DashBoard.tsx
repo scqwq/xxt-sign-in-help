@@ -133,7 +133,7 @@ function DashBoard() {
               date: new Date(),
               lv: user.lv,
               monitor: false,
-              config: user.config
+              config: request_IDBGET.result.config
             };
             setUserParams(userParam);
             db.transaction('user', 'readwrite')

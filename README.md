@@ -15,6 +15,8 @@
 - **关于二维码签到**：当前还未实现，由于WebIM已经无效，以下是思路
 扫码后，会获取enc，获取的enc相当于可以让你确认签到的“密钥”，此时设备会在URL中发送附带enc参数至服务器，综合其他的请求信息让用户签到成功，也就是说，我们需要一个脚本，需要在图片发送的一瞬间（例如动态时间为10s），解析enc，并使用附带enc的URL实现签到，目前考虑使用挂载到服务器的QQ上的bot实现
 
+另外注意：如果老师开启了防作弊，即真人验证，则本程序无法绕过
+
 ## 最终功能（未实现，或者说之前已经实现了但是现在不管用了）
 
 - **多签到类型**：普通、拍照、手势、位置、二维码、签到码
@@ -95,20 +97,11 @@ pnpm build
 pnpm start      # 交互式命令行签到
 ```
 
-## Docker 部署
-
-```bash
-docker pull ghcr.io/cxorz/chaoxing-signin:latest
-docker run -d -p 80:80 -p 5000:5000 ghcr.io/cxorz/chaoxing-signin
-```
-
-访问 `http://localhost` 即可。详见 [DockerGuide.md](./DockerGuide.md)。
-
 ## 配置说明
 
 ### 根目录 env.json（兼容配置）
 
-######总结注意：userAgent是最重要的，先填这个，获取UA一般要通过手机抓包获取
+######总结注意：userAgent是最重要的，先填这个，获取UA随便填一个就行，或者要通过手机抓包获取
 
 | 字段 | 说明 |
 |---|---|
